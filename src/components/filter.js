@@ -81,6 +81,7 @@ function Filter() {
   function renderCheckbox(name, label) {
     return (
       <div className="filter-item">
+        <label htmlFor={name}>{label}</label>
         <input
           type="checkbox"
           id={name}
@@ -88,10 +89,9 @@ function Filter() {
           checked={checkBoxState[name]}
           onChange={handleCheckboxChange}
         />
-        <label htmlFor={name}>{label}</label>
       </div>
     );
-  }
+  }  
 }
 
 export default Filter;
