@@ -10,7 +10,7 @@
 .reminders {
     display: flex;
     font-family: Arial, sans-serif;
-    background-color: #deefde;
+    background-color: #def6de;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.657);
     border-radius: 30px;
     width: 100%;
