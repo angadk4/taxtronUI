@@ -127,9 +127,6 @@ function Filter() {
           <button className="apply-button">Apply</button>
         </div>
       </div>
-      <div className="content">
-        <div className="table-placeholder">Table Placeholder</div>
-      </div>
     </div>
   );
 

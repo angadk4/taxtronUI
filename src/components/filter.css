@@ -1,11 +1,12 @@
 .container {
   display: flex;
   height: 850px;
+  width: 20%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font style */
 }
 
 .sidebar {
-  width: 20%;
+  width: 100%;
   background-color: #f4f4f4;
   padding: 20px;
   margin: 10px;
@@ -20,16 +21,6 @@
   align-items: center;
   justify-content: center;
   padding: 20px; /* Padding for inner spacing */
-}
-
-.table-placeholder {
-  width: 100%;
-  text-align: center;
-  padding: 20px;
-  color: #555; /* Modern font color */
-  background-color: #eaeaea; /* Light gray for differentiation */
-  border: 1px solid #ccc; /* Defined boundaries */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05); /* Less pronounced shadow */
 }
 
 .filter-category h3 {
@@ -106,7 +97,7 @@ input[type="checkbox"] {
   display: inline-block;
   position: relative;
   cursor: pointer; /* Changes the cursor to a pointer to indicate it's clickable */
-  transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s ease; /* Smooth transitions for hover effects */
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s ease; /* Smooth transitions for hover effects */
 }
 
 input[type="checkbox"]:hover {
