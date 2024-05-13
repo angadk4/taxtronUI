@@ -2,6 +2,17 @@
   text-align: center;
 }
 
+.top-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px; /* Adjust as needed */
+}
+
+.bottom-section {
+  display: flex;
+  justify-content: center;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

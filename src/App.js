@@ -8,10 +8,14 @@ import Table from './components/table'
 function App() {
   return (
     <div className="App">
-      <Dashboard />
-      <Reminders />
-      <Filter />
-      <Table />
+      <div className="top-section">
+        <Dashboard />
+        <Reminders />
+      </div>
+      <div className="bottom-section">
+        <Filter />
+        <Table />
+      </div>
     </div>
   );
 }
