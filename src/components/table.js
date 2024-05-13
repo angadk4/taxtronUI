@@ -1,5 +1,6 @@
 import React from 'react';
 import './table.css';
+import clients from './clientdata.json';  // Import the JSON data
 
 function Table() {
   return (
@@ -15,13 +16,13 @@ function Table() {
           </tr>
         </thead>
         <tbody>
-          {[...Array(10)].map((_, index) => (
+          {clients.map((client, index) => (
             <tr key={index}>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
+              <td>{`${client.firstnames} ${client.surname}`}</td>
+              <td>{client.sin}</td>
+              <td>{client.phoneNo}</td>
+              <td>{client.email}</td>
+              <td>{client.lastUpdated}</td>
             </tr>
           ))}
         </tbody>
