@@ -1,28 +1,92 @@
 .content {
-  flex-grow: 1;
-  background-color: #fff;
   display: flex;
-  align-items:flex-start; /* Center vertically */
-  justify-content: center; /* Center horizontally */
-  padding: 20px;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  font-family: Arial, sans-serif;
+}
+
+.tab {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  border-bottom: 3px solid #ccc;
+}
+
+.tablinks {
+  background-color: #f1f1f1;
+  width: 100px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: background-color 0.3s, transform 0.2s;
+  margin: 0 5px;
+  font-weight: bold;
+  border-radius: top 10% ;
+}
+
+.tablinks:hover {
+  background-color: #ddd;
+  transform: translateY(-3px);
+}
+
+.tablinks.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.tabcontent {
+  display: none;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.tabcontent.active {
+  display: block;
+  opacity: 1;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .custom-table {
   width: 100%;
   border-collapse: collapse;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .custom-table th,
 .custom-table td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
+  border: 1px solid #ddd;
+  padding: 8px;
+  transition: background-color 0.3s;
 }
 
 .custom-table th {
-  background-color: #eaeaea; /* Light gray for header */
+  background-color: #f2f2f2;
+  color: #333;
 }
 
-.custom-table tbody tr:nth-child(even) {
-  background-color: #f2f2f2; /* Alternate row background */
+.custom-table th:hover {
+  background-color: #e2e2e2;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.custom-table tbody.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
 }

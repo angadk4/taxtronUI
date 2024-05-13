@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './table.css';
 import clients from './clientdata.json';
 import { parseISO, format } from 'date-fns';
@@ -25,9 +25,55 @@ function formatDate(dateStr) {
 
 function Table() {
   const [activeTab, setActiveTab] = useState('T1');
-  
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
   const t1Clients = clients.filter(client => client.productCode === 'T1');
   const t2Clients = clients.filter(client => client.productCode === 'T2');
+
+  const sortedClients = (clients) => {
+    if (sortConfig.key) {
+      return [...clients].sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return clients;
+  };
+
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const renderTableHeader = (columns) => {
+    return columns.map((column) => (
+      <th key={column.key} onClick={() => requestSort(column.key)}>
+        {column.label} {sortConfig.key === column.key ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+      </th>
+    ));
+  };
+
+  useEffect(() => {
+    const tabContent = document.querySelector('.tabcontent.active');
+    tabContent.classList.add('fade-in');
+    const timer = setTimeout(() => tabContent.classList.remove('fade-in'), 500);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
+
+  useEffect(() => {
+    const tableBody = document.querySelector('.custom-table tbody');
+    tableBody.classList.add('fade-in');
+    const timer = setTimeout(() => tableBody.classList.remove('fade-in'), 500);
+    return () => clearTimeout(timer);
+  }, [sortConfig]);
 
   return (
     <div className="content">
@@ -37,19 +83,21 @@ function Table() {
       </div>
 
       {activeTab === 'T1' && (
-        <div className="tabcontent">
+        <div className="tabcontent active">
           <table className="custom-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>SIN</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Last Updated</th>
+                {renderTableHeader([
+                  { key: 'firstnames', label: 'Name' },
+                  { key: 'sin', label: 'SIN' },
+                  { key: 'phoneNo', label: 'Phone' },
+                  { key: 'email', label: 'Email' },
+                  { key: 'lastUpdated', label: 'Last Updated' },
+                ])}
               </tr>
             </thead>
             <tbody>
-              {t1Clients.map((client, index) => (
+              {sortedClients(t1Clients).map((client, index) => (
                 <tr key={index}>
                   <td>{`${client.firstnames} ${client.surname}`}</td>
                   <td>{client.sin}</td>
@@ -64,18 +112,20 @@ function Table() {
       )}
 
       {activeTab === 'T2' && (
-        <div className="tabcontent">
+        <div className="tabcontent active">
           <table className="custom-table">
             <thead>
               <tr>
-                <th>Company Name</th>
-                <th>Business Number</th>
-                <th>Year End</th>
-                <th>Last Updated</th>
+                {renderTableHeader([
+                  { key: 'companyName', label: 'Company Name' },
+                  { key: 'bnFull', label: 'Business Number' },
+                  { key: 'fyEnd', label: 'Year End' },
+                  { key: 'lastUpdated', label: 'Last Updated' },
+                ])}
               </tr>
             </thead>
             <tbody>
-              {t2Clients.map((client, index) => (
+              {sortedClients(t2Clients).map((client, index) => (
                 <tr key={index}>
                   <td>{client.companyName}</td>
                   <td>{client.bnFull}</td>
