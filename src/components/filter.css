@@ -41,7 +41,7 @@ input[type="checkbox"] {
 }
 
 .calendar-button, .reset-button, .apply-button {
-  background-color: #3498db; /* Bright modern blue */
+  background-color: #4CAF50; /* Bright modern blue */
   color: #ffffff;
   border: none;
   padding: 10px 15px;
@@ -51,7 +51,7 @@ input[type="checkbox"] {
 }
 
 .calendar-button:hover, .reset-button:hover, .apply-button:hover {
-  background-color: #2980b9; /* Darker shade on hover */
+  background-color: #337435; /* Darker shade on hover */
 }
 
 .date-display {
@@ -91,7 +91,7 @@ input[type="checkbox"] {
   -webkit-appearance: none;
   appearance: none;
   background-color: #fff; /* White background */
-  border: 2px solid #3498db; /* Blue border */
+  border: 2px solid #4CAF50; /* Blue border */
   padding: 9px; /* Size of the checkbox */
   border-radius: 4px; /* Rounded corners */
   display: inline-block;
@@ -101,15 +101,14 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:hover {
-  background-color: #d3eeff;
-  border-color: #2980b9; /* Darker shade of blue on hover */
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  
+  background-color: #ceeccf;
+  border-color: #90ae91; /* Darker shade of blue on hover */
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */ 
 }
 
 input[type="checkbox"]:checked {
-  background-color: #3498db; /* Blue background when checked */
-  border: 2px solid #3498db; /* Blue border when checked */
+  background-color: #4CAF50; /* Blue background when checked */
+  border: 2px solid #4CAF50; /* Blue border when checked */
 }
 
 input[type="checkbox"]:checked:after {
