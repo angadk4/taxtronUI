@@ -2,8 +2,6 @@ import React from 'react';
 import './App.css';
 import Dashboard from './components/dashboard';
 import Reminders from './components/reminders';
-import Filter from './components/filter'
-import Table from './components/table'
 import FilterTable from './components/filtertable';
 
 function App() {

@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import React, { useState, useMemo, useEffect } from 'react';
 import './filtertable.css';
 import clientsData from './clientdata.json';
 import { parseISO, format } from 'date-fns';
@@ -28,8 +26,8 @@ const FilterTable = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBirthMonth, setSelectedBirthMonth] = useState('');
-  const [selectedBirthDate, setSelectedBirthDate] = useState(null);
-  const [datePickerVisibility, setDatePickerVisibility] = useState(false);
+  const [selectedBirthDate, setSelectedBirthDate] = useState('');
+  const [appliedFilters, setAppliedFilters] = useState({});
   const [checkBoxState, setCheckBoxState] = useState({
     selfEmploymentIncome: false,
     nonResidentReturns: false,
@@ -44,6 +42,23 @@ const FilterTable = () => {
     cancelled: false
   });
 
+  const months = useMemo(() =>
+    Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
+  , []);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    handleReset();
+  };
+
+  const applyFilters = () => {
+    setAppliedFilters({
+      selectedBirthMonth,
+      selectedBirthDate,
+      checkBoxState,
+    });
+  };
+
   const filteredClients = useMemo(() => {
     const clients = activeTab === 'T1'
       ? clientsData.filter(client => client.productCode === 'T1')
@@ -51,12 +66,18 @@ const FilterTable = () => {
 
     const queryParts = searchQuery.toLowerCase().split(' ').filter(Boolean);
 
-    return clients.filter(client =>
-      queryParts.every(queryPart =>
+    return clients.filter(client => {
+      const dob = new Date(client.dob);
+      const matchesMonth = appliedFilters.selectedBirthMonth ? dob.toLocaleString('en-US', { month: 'long' }) === appliedFilters.selectedBirthMonth : true;
+      const matchesDate = appliedFilters.selectedBirthDate ? (dob.getDate() === parseInt(appliedFilters.selectedBirthDate, 10)) : true;
+
+      const matchesSearchQuery = queryParts.every(queryPart =>
         Object.values(client).some(value => normalizeString(String(value)).includes(queryPart))
-      )
-    );
-  }, [activeTab, searchQuery]);
+      );
+
+      return matchesMonth && matchesDate && matchesSearchQuery;
+    });
+  }, [activeTab, appliedFilters, searchQuery]);
 
   const sortedClients = useMemo(() => {
     const sorted = [...filteredClients];
@@ -115,18 +136,17 @@ const FilterTable = () => {
 
   const handleMonthChange = (e) => {
     setSelectedBirthMonth(e.target.value);
-    setSelectedBirthDate(null); // Clear the date selection
+    setSelectedBirthDate(''); // Clear the date selection
   };
 
-  const handleDateChange = (date) => {
-    setSelectedBirthDate(date);
-    setSelectedBirthMonth(''); // Clear the month selection
-    setDatePickerVisibility(false); // Hide the date picker
+  const handleDateChange = (e) => {
+    setSelectedBirthDate(e.target.value);
   };
 
   const handleReset = () => {
     setSelectedBirthMonth('');
-    setSelectedBirthDate(null);
+    setSelectedBirthDate('');
+    setSearchQuery('');
     setCheckBoxState({
       selfEmploymentIncome: false,
       nonResidentReturns: false,
@@ -140,6 +160,7 @@ const FilterTable = () => {
       failed: false,
       cancelled: false
     });
+    setAppliedFilters({});
   };
 
   function renderCheckbox(name, label) {
@@ -168,6 +189,7 @@ const FilterTable = () => {
               id="month-select"
               value={selectedBirthMonth}
               onChange={handleMonthChange}
+              className="custom-select"
             >
               <option value="">Select a month</option>
               {months.map(month => (
@@ -177,24 +199,18 @@ const FilterTable = () => {
           </div>
           <div className="filter-item">
             <label htmlFor="date-select">Birth Date:</label>
-            <span className="date-display">{selectedBirthDate ? selectedBirthDate.toISOString().split('T')[0] : 'No date selected'}</span>
-            <button
-              className="calendar-button"
-              onClick={() => setDatePickerVisibility(true)}
-              aria-label="Open calendar for date selection"
+            <select 
+              id="date-select"
+              value={selectedBirthDate}
+              onChange={handleDateChange}
+              disabled={!selectedBirthMonth}
+              className="custom-select"
             >
-              Calendar
-            </button>
-            {datePickerVisibility && (
-              <div className="date-picker-overlay">
-                <button onClick={() => setDatePickerVisibility(false)} style={{ float: 'right', margin: '10px' }}>Close</button>
-                <DatePicker
-                  selected={selectedBirthDate}
-                  onChange={handleDateChange}
-                  inline
-                />
-              </div>
-            )}
+              <option value="">Select a date</option>
+              {[...Array(31).keys()].map(i => (
+                <option key={i + 1} value={i + 1}>{i + 1}</option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="filter-category">
@@ -221,14 +237,14 @@ const FilterTable = () => {
         </div>
         <div className="buttons">
           <button onClick={handleReset} className="reset-button">Reset</button>
-          <button className="apply-button">Apply</button>
+          <button className="apply-button" onClick={applyFilters}>Apply</button>
         </div>
       </div>
 
       <div className="table-container">
         <div className="tab">
-          <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => setActiveTab('T1')}>T1</button>
-          <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => setActiveTab('T2')}>T2</button>
+          <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => handleTabChange('T1')}>T1</button>
+          <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => handleTabChange('T2')}>T2</button>
         </div>
         <div className="search-bar">
           <input
@@ -270,7 +286,5 @@ const FilterTable = () => {
     </div>
   );
 };
-
-const months = Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }));
 
 export default FilterTable;
