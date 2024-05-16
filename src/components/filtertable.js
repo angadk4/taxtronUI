@@ -27,8 +27,8 @@ const FilterTable = () => {
   const [activeTab, setActiveTab] = useState('T1');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedBirthMonth, setSelectedBirthMonth] = useState('');
+  const [selectedBirthDate, setSelectedBirthDate] = useState(null);
   const [datePickerVisibility, setDatePickerVisibility] = useState(false);
   const [checkBoxState, setCheckBoxState] = useState({
     selfEmploymentIncome: false,
@@ -114,19 +114,19 @@ const FilterTable = () => {
   };
 
   const handleMonthChange = (e) => {
-    setSelectedMonth(e.target.value);
-    setSelectedDate(null); // Clear the date selection
+    setSelectedBirthMonth(e.target.value);
+    setSelectedBirthDate(null); // Clear the date selection
   };
 
   const handleDateChange = (date) => {
-    setSelectedDate(date);
-    setSelectedMonth(''); // Clear the month selection
+    setSelectedBirthDate(date);
+    setSelectedBirthMonth(''); // Clear the month selection
     setDatePickerVisibility(false); // Hide the date picker
   };
 
   const handleReset = () => {
-    setSelectedMonth('');
-    setSelectedDate(null);
+    setSelectedBirthMonth('');
+    setSelectedBirthDate(null);
     setCheckBoxState({
       selfEmploymentIncome: false,
       nonResidentReturns: false,
@@ -161,12 +161,12 @@ const FilterTable = () => {
     <div className="main-content">
       <div className="filter-container">
         <div className="filter-category">
-          <h3>By Date</h3>
+          <h3>By Birthdate</h3>
           <div className="filter-item">
-            <label htmlFor="month-select">Month:</label>
+            <label htmlFor="month-select">Birth Month:</label>
             <select 
               id="month-select"
-              value={selectedMonth}
+              value={selectedBirthMonth}
               onChange={handleMonthChange}
             >
               <option value="">Select a month</option>
@@ -176,8 +176,8 @@ const FilterTable = () => {
             </select>
           </div>
           <div className="filter-item">
-            <label htmlFor="date-select">Date:</label>
-            <span className="date-display">{selectedDate ? selectedDate.toISOString().split('T')[0] : 'No date selected'}</span>
+            <label htmlFor="date-select">Birth Date:</label>
+            <span className="date-display">{selectedBirthDate ? selectedBirthDate.toISOString().split('T')[0] : 'No date selected'}</span>
             <button
               className="calendar-button"
               onClick={() => setDatePickerVisibility(true)}
@@ -189,7 +189,7 @@ const FilterTable = () => {
               <div className="date-picker-overlay">
                 <button onClick={() => setDatePickerVisibility(false)} style={{ float: 'right', margin: '10px' }}>Close</button>
                 <DatePicker
-                  selected={selectedDate}
+                  selected={selectedBirthDate}
                   onChange={handleDateChange}
                   inline
                 />
