@@ -4,6 +4,7 @@ import Dashboard from './components/dashboard';
 import Reminders from './components/reminders';
 import Filter from './components/filter'
 import Table from './components/table'
+import FilterTable from './components/filtertable';
 
 function App() {
   return (
@@ -13,8 +14,7 @@ function App() {
         <Reminders />
       </div>
       <div className="bottom-section">
-        <Filter />
-        <Table />
+        <FilterTable />
       </div>
     </div>
   );
