@@ -79,7 +79,7 @@ const Table = () => {
     const fadeIn = (selector) => {
       const element = document.querySelector(selector);
       element.classList.add('fade-in');
-      const timer = setTimeout(() => element.classList.remove('fade-in'), 500);
+      const timer = setTimeout(() => element.classList.remove('fade-in'), 300);
       return () => clearTimeout(timer);
     };
 
@@ -89,19 +89,18 @@ const Table = () => {
 
   return (
     <div className="content">
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
       <div className="tab">
         <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => setActiveTab('T1')}>T1</button>
         <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => setActiveTab('T2')}>T2</button>
       </div>
-
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search Fields..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
       <div className="tabcontent active">
         <table className="custom-table">
           <thead>

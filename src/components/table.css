@@ -9,8 +9,9 @@
 .tab {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
-  border-bottom: 3px solid #ccc;
+  margin-bottom: 15px;
+  border-bottom: 5px solid rgb(199, 222, 200);
+  width: 240px
 }
 
 .tablinks {
@@ -23,11 +24,11 @@
   transition: background-color 0.3s, transform 0.2s;
   margin: 0 5px;
   font-weight: bold;
-  border-radius: top 10% ;
+  border-radius: 10% 10% 0 0;
 }
 
 .tablinks:hover {
-  background-color: #ddd;
+  background-color: #d2ead4;
   transform: translateY(-3px);
 }
 
@@ -40,7 +41,7 @@
   display: none;
   width: 100%;
   opacity: 0;
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
 }
 
 .tabcontent.active {
@@ -49,7 +50,7 @@
 }
 
 .fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 @keyframes fadeIn {
@@ -88,5 +89,29 @@
 }
 
 .custom-table tbody.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.search-bar {
+  margin-bottom: 15px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar input {
+  width: 80%;
+  padding: 10px 15px;
+  border: 2px solid rgb(199, 222, 200);
+  border-radius: 25px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+}
+
+.search-bar input:focus {
+  border-color: #4CAF50;
+  border-width: 2.5px;
+  outline: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
