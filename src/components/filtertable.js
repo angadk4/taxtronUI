@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import './filtertable.css';
 import clientsData from './clientdata.json';
 import { parseISO, format } from 'date-fns';
@@ -42,6 +42,8 @@ const FilterTable = () => {
     cancelled: false
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [clients, setClients] = useState({ T1: [], T2: [] });
+  const [loadedPages, setLoadedPages] = useState({ T1: 0, T2: 0 });
   const itemsPerPage = 50;
 
   const months = useMemo(() =>
@@ -60,16 +62,60 @@ const FilterTable = () => {
       selectedBirthDate,
       checkBoxState,
     });
+    setCurrentPage(1);
+    loadClients(1, true);
   };
 
+  const loadClients = useCallback((page, reset = false) => {
+    const offset = (page - 1) * itemsPerPage;
+    let filteredData = clientsData.filter(client => client.productCode === activeTab);
+
+    if (appliedFilters.selectedBirthMonth) {
+      filteredData = filteredData.filter(client => {
+        const dob = new Date(client.dob);
+        return dob.toLocaleString('en-US', { month: 'long' }) === appliedFilters.selectedBirthMonth;
+      });
+    }
+
+    if (appliedFilters.selectedBirthDate) {
+      filteredData = filteredData.filter(client => {
+        const dob = new Date(client.dob);
+        return dob.getDate() === parseInt(appliedFilters.selectedBirthDate, 10);
+      });
+    }
+
+    const queryParts = searchQuery.toLowerCase().split(' ').filter(Boolean);
+    if (queryParts.length > 0) {
+      filteredData = filteredData.filter(client => {
+        return queryParts.every(queryPart =>
+          Object.values(client).some(value => normalizeString(String(value)).includes(queryPart))
+        );
+      });
+    }
+
+    const newClients = filteredData.slice(offset, offset + itemsPerPage);
+
+    setClients(prevClients => ({
+      ...prevClients,
+      [activeTab]: reset ? newClients : [...prevClients[activeTab], ...newClients]
+    }));
+
+    setLoadedPages(prevLoadedPages => ({
+      ...prevLoadedPages,
+      [activeTab]: reset ? 1 : prevLoadedPages[activeTab] + 1
+    }));
+  }, [activeTab, appliedFilters, searchQuery]);
+
+  useEffect(() => {
+    loadClients(1, true);
+  }, [activeTab, loadClients]);
+
   const filteredClients = useMemo(() => {
-    const clients = activeTab === 'T1'
-      ? clientsData.filter(client => client.productCode === 'T1')
-      : clientsData.filter(client => client.productCode === 'T2');
+    const clientsToFilter = clients[activeTab];
 
     const queryParts = searchQuery.toLowerCase().split(' ').filter(Boolean);
 
-    return clients.filter(client => {
+    return clientsToFilter.filter(client => {
       const dob = new Date(client.dob);
       const matchesMonth = appliedFilters.selectedBirthMonth ? dob.toLocaleString('en-US', { month: 'long' }) === appliedFilters.selectedBirthMonth : true;
       const matchesDate = appliedFilters.selectedBirthDate ? (dob.getDate() === parseInt(appliedFilters.selectedBirthDate, 10)) : true;
@@ -80,7 +126,7 @@ const FilterTable = () => {
 
       return matchesMonth && matchesDate && matchesSearchQuery;
     });
-  }, [activeTab, appliedFilters, searchQuery]);
+  }, [clients, activeTab, appliedFilters, searchQuery]);
 
   const sortedClients = useMemo(() => {
     const sorted = [...filteredClients];
@@ -169,10 +215,17 @@ const FilterTable = () => {
       cancelled: false
     });
     setAppliedFilters({});
+    setCurrentPage(1);
+    loadClients(1, true);
   };
 
   const handleNextPage = () => {
-    setCurrentPage(prevPage => prevPage + 1);
+    if (paginatedClients.length === itemsPerPage) {
+      setCurrentPage(prevPage => prevPage + 1);
+      if ((currentPage + 1) > loadedPages[activeTab]) {
+        loadClients(currentPage + 1);
+      }
+    }
   };
 
   const handlePreviousPage = () => {

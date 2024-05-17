@@ -12,6 +12,7 @@
   border: 2px solid #dedede;
   border-radius: 10px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: fit-content;
 }
 
 .table-container {
