@@ -1,261 +1,287 @@
 .main-content {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-  }
-  
-  .filter-container {
-    width: 20%;
-    background-color: #f4f4f4;
-    padding: 25px;
-    margin: 15px;
-    border: 2px solid #dedede;
-    border-radius: 10px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
-  .table-container {
-    width: 72%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    font-family: Arial, sans-serif;
-    padding: 10px;
-  }
-  
-  .tab {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 15px;
-    border-bottom: 5px solid rgb(199, 222, 200);
-    width: 240px;
-  }
-  
-  .tablinks {
-    background-color: #f1f1f1;
-    width: 100px;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    padding: 14px 16px;
-    transition: background-color 0.3s, transform 0.2s;
-    margin: 0 5px;
-    font-weight: bold;
-    border-radius: 10% 10% 0 0;
-  }
-  
-  .tablinks:hover {
-    background-color: #d2ead4;
-    transform: translateY(-3px);
-  }
-  
-  .tablinks.active {
-    background-color: #4CAF50;
-    color: white;
-  }
-  
-  .tabcontent {
-    display: none;
-    width: 100%;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.filter-container {
+  width: 20%;
+  background-color: #f4f4f4;
+  padding: 25px;
+  margin: 15px;
+  border: 2px solid #dedede;
+  border-radius: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.table-container {
+  width: 72%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  padding: 10px;
+}
+
+.tab {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+  border-bottom: 5px solid rgb(199, 222, 200);
+  width: 240px;
+}
+
+.tablinks {
+  background-color: #f1f1f1;
+  width: 100px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: background-color 0.3s, transform 0.2s;
+  margin: 0 5px;
+  font-weight: bold;
+  border-radius: 10% 10% 0 0;
+}
+
+.tablinks:hover {
+  background-color: #d2ead4;
+  transform: translateY(-3px);
+}
+
+.tablinks.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.tabcontent {
+  display: none;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.tabcontent.active {
+  display: block;
+  opacity: 1;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
     opacity: 0;
-    transition: opacity 0.3s ease-in-out;
   }
-  
-  .tabcontent.active {
-    display: block;
+  to {
     opacity: 1;
   }
-  
-  .fade-in {
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  .custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .custom-table th,
-  .custom-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    transition: background-color 0.3s;
-  }
-  
-  .custom-table th {
-    background-color: #f2f2f2;
-    color: #333;
-  }
-  
-  .custom-table th:hover {
-    background-color: #e2e2e2;
-  }
-  
-  .custom-table tbody tr:hover {
-    background-color: #f9f9f9;
-  }
-  
-  .custom-table tbody.fade-in {
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  .custom-table th,
-  .custom-table td {
-    text-align: left;
-    white-space: nowrap; /* Prevent text wrapping */
-  }
-  
-  .custom-table th {
-    width: 150px; /* Set a fixed width for table headers */
-  }
-  
-  .custom-table td {
-    width: 150px; /* Set a fixed width for table data */
-  }
-  
-  .search-bar {
-    margin-bottom: 15px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-  
-  .search-bar input {
-    width: 80%;
-    padding: 10px 15px;
-    border: 2px solid rgb(199, 222, 200);
-    border-radius: 25px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    font-size: 16px;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .search-bar input:focus {
-    border-color: #4CAF50;
-    border-width: 2.5px;
-    outline: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .filter-category h3 {
-    color: #2c3e50;
-    font-size: 18px;
-  }
-  
-  .filter-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 14px;
-  }
-  
-  input[type="checkbox"] {
-    margin-left: 10px;
-  }
-  
-  .calendar-button,
-  .reset-button,
-  .apply-button {
-    background-color: #4CAF50;
-    color: #ffffff;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    font-size: 14px;
-  }
-  
-  .calendar-button:hover,
-  .reset-button:hover,
-  .apply-button:hover {
-    background-color: #337435;
-  }
-  
-  .date-display {
-    margin: 0 10px;
-    font-style: italic;
-  }
-  
-  .buttons {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .reset-button {
-    background-color: #e74c3c;
-  }
-  
-  .apply-button {
-    font-weight: bold;
-  }
-  
-  input[type="checkbox"] {
-    -webkit-appearance: none;
-    appearance: none;
-    background-color: #fff;
-    border: 2px solid #4CAF50;
-    padding: 9px;
-    border-radius: 4px;
-    display: inline-block;
-    position: relative;
-    cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s ease;
-  }
-  
-  input[type="checkbox"]:hover {
-    background-color: #ceeccf;
-    border-color: #90ae91;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  input[type="checkbox"]:checked {
-    background-color: #4CAF50;
-    border: 2px solid #4CAF50;
-  }
-  
-  input[type="checkbox"]:checked:after {
-    content: '';
-    position: absolute;
-    left: 5px;
-    top: 1px;
-    width: 5px;
-    height: 10px;
-    border: solid #fff;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-  }
+}
 
-  .custom-select {
-    width: 50%;
-    padding: 3px;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    background-color: #fff;
-    font-size: 14px;
-    transition: border-color 0.3s ease-in-out;
-  }
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 
-  .custom-select:focus {
-    border-color: #80a581;
-    outline: none;
-  }
+.custom-table th,
+.custom-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  transition: background-color 0.3s;
+}
 
-  .custom-select option {
-    padding: 10px;
-  }
+.custom-table th {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.custom-table th:hover {
+  background-color: #e2e2e2;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.custom-table tbody.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.custom-table th,
+.custom-table td {
+  text-align: left;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.custom-table th {
+  width: 150px; /* Set a fixed width for table headers */
+}
+
+.custom-table td {
+  width: 150px; /* Set a fixed width for table data */
+}
+
+.search-bar {
+  margin-bottom: 15px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar input {
+  width: 80%;
+  padding: 10px 15px;
+  border: 2px solid rgb(199, 222, 200);
+  border-radius: 25px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+}
+
+.search-bar input:focus {
+  border-color: #4CAF50;
+  border-width: 2.5px;
+  outline: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.filter-category h3 {
+  color: #2c3e50;
+  font-size: 18px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+input[type="checkbox"] {
+  margin-left: 10px;
+}
+
+.calendar-button,
+.reset-button,
+.apply-button {
+  background-color: #4CAF50;
+  color: #ffffff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 14px;
+}
+
+.calendar-button:hover,
+.reset-button:hover,
+.apply-button:hover {
+  background-color: #337435;
+}
+
+.date-display {
+  margin: 0 10px;
+  font-style: italic;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.reset-button {
+  background-color: #e74c3c;
+}
+
+.apply-button {
+  font-weight: bold;
+}
+
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  border: 2px solid #4CAF50;
+  padding: 9px;
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s ease;
+}
+
+input[type="checkbox"]:hover {
+  background-color: #ceeccf;
+  border-color: #90ae91;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+input[type="checkbox"]:checked {
+  background-color: #4CAF50;
+  border: 2px solid #4CAF50;
+}
+
+input[type="checkbox"]:checked:after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.custom-select {
+  width: 50%;
+  padding: 3px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background-color: #fff;
+  font-size: 14px;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.custom-select:focus {
+  border-color: #80a581;
+  outline: none;
+}
+
+.custom-select option {
+  padding: 10px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.pagination button {
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.pagination button:hover {
+  background-color: #337435;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

@@ -41,6 +41,8 @@ const FilterTable = () => {
     failed: false,
     cancelled: false
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   const months = useMemo(() =>
     Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
@@ -48,6 +50,7 @@ const FilterTable = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setCurrentPage(1);
     handleReset();
   };
 
@@ -91,6 +94,11 @@ const FilterTable = () => {
     }
     return sorted;
   }, [filteredClients, sortConfig]);
+
+  const paginatedClients = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedClients.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedClients, currentPage]);
 
   const requestSort = (key) => {
     setSortConfig((prevState) => ({
@@ -161,6 +169,14 @@ const FilterTable = () => {
       cancelled: false
     });
     setAppliedFilters({});
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prevPage => prevPage + 1);
+  };
+
+  const handlePreviousPage = () => {
+    setCurrentPage(prevPage => (prevPage > 1 ? prevPage - 1 : 1));
   };
 
   function renderCheckbox(name, label) {
@@ -266,7 +282,7 @@ const FilterTable = () => {
               </tr>
             </thead>
             <tbody>
-              {sortedClients.map((client, index) => (
+              {paginatedClients.map((client, index) => (
                 <tr key={index}>
                   {columns.map((column) => (
                     <td key={column.key}>
@@ -281,6 +297,10 @@ const FilterTable = () => {
               ))}
             </tbody>
           </table>
+          <div className="pagination">
+            <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous</button>
+            <button onClick={handleNextPage} disabled={paginatedClients.length < itemsPerPage}>Next</button>
+          </div>
         </div>
       </div>
     </div>
