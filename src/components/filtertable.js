@@ -44,6 +44,7 @@ const FilterTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [clients, setClients] = useState({ T1: [], T2: [] });
   const [loadedPages, setLoadedPages] = useState({ T1: 0, T2: 0 });
+  const [showCalendar, setShowCalendar] = useState(false);
   const itemsPerPage = 50;
 
   const months = useMemo(() =>
@@ -69,21 +70,21 @@ const FilterTable = () => {
   const loadClients = useCallback((page, reset = false) => {
     const offset = (page - 1) * itemsPerPage;
     let filteredData = clientsData.filter(client => client.productCode === activeTab);
-
+  
     if (appliedFilters.selectedBirthMonth) {
       filteredData = filteredData.filter(client => {
         const dob = new Date(client.dob);
         return dob.toLocaleString('en-US', { month: 'long' }) === appliedFilters.selectedBirthMonth;
       });
     }
-
+  
     if (appliedFilters.selectedBirthDate) {
       filteredData = filteredData.filter(client => {
         const dob = new Date(client.dob);
         return dob.getDate() === parseInt(appliedFilters.selectedBirthDate, 10);
       });
     }
-
+  
     const queryParts = searchQuery.toLowerCase().split(' ').filter(Boolean);
     if (queryParts.length > 0) {
       filteredData = filteredData.filter(client => {
@@ -92,23 +93,30 @@ const FilterTable = () => {
         );
       });
     }
-
+  
     const newClients = filteredData.slice(offset, offset + itemsPerPage);
-
+  
     setClients(prevClients => ({
       ...prevClients,
       [activeTab]: reset ? newClients : [...prevClients[activeTab], ...newClients]
     }));
-
+  
     setLoadedPages(prevLoadedPages => ({
       ...prevLoadedPages,
       [activeTab]: reset ? 1 : prevLoadedPages[activeTab] + 1
     }));
   }, [activeTab, appliedFilters, searchQuery]);
+  
+  
 
   useEffect(() => {
     loadClients(1, true);
   }, [activeTab, loadClients]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    loadClients(1, true);
+  }, [searchQuery, loadClients]);
 
   const filteredClients = useMemo(() => {
     const clientsToFilter = clients[activeTab];
@@ -190,11 +198,13 @@ const FilterTable = () => {
 
   const handleMonthChange = (e) => {
     setSelectedBirthMonth(e.target.value);
+    setShowCalendar(false);
     setSelectedBirthDate(''); // Clear the date selection
   };
 
-  const handleDateChange = (e) => {
-    setSelectedBirthDate(e.target.value);
+  const handleDateChange = (date) => {
+    setSelectedBirthDate(date);
+    setShowCalendar(false);
   };
 
   const handleReset = () => {
@@ -221,12 +231,14 @@ const FilterTable = () => {
 
   const handleNextPage = () => {
     if (paginatedClients.length === itemsPerPage) {
-      setCurrentPage(prevPage => prevPage + 1);
-      if ((currentPage + 1) > loadedPages[activeTab]) {
-        loadClients(currentPage + 1);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+  
+      if (nextPage > loadedPages[activeTab]) {
+        loadClients(nextPage);
       }
     }
-  };
+  };  
 
   const handlePreviousPage = () => {
     setCurrentPage(prevPage => (prevPage > 1 ? prevPage - 1 : 1));
@@ -247,6 +259,32 @@ const FilterTable = () => {
     );
   }
 
+  const renderCalendar = () => {
+    if (!selectedBirthMonth) return null;
+
+    const monthIndex = months.indexOf(selectedBirthMonth);
+    const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate(); // Use any non-leap year for consistency
+
+    return (
+      <div className="calendar-container">
+        <div className="calendar-header">
+          <h4>{selectedBirthMonth}</h4>
+        </div>
+        <div className="calendar-grid">
+          {[...Array(daysInMonth)].map((_, i) => (
+            <button
+              key={i + 1}
+              className={`calendar-day ${selectedBirthDate === (i + 1) ? 'selected' : ''}`}
+              onClick={() => handleDateChange(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="main-content">
       <div className="filter-container">
@@ -266,21 +304,18 @@ const FilterTable = () => {
               ))}
             </select>
           </div>
-          <div className="filter-item">
+          <div className={`filter-item ${selectedBirthMonth ? '' : 'inactive'}`}>
             <label htmlFor="date-select">Birth Date:</label>
-            <select 
-              id="date-select"
-              value={selectedBirthDate}
-              onChange={handleDateChange}
+            <span className="date-display">{selectedBirthDate ? `${selectedBirthMonth} ${selectedBirthDate}` : 'Select a date'}</span>
+            <button 
+              className="calendar-button" 
+              onClick={() => setShowCalendar(true)} 
               disabled={!selectedBirthMonth}
-              className="custom-select"
             >
-              <option value="">Select a date</option>
-              {[...Array(31).keys()].map(i => (
-                <option key={i + 1} value={i + 1}>{i + 1}</option>
-              ))}
-            </select>
+              Select Date
+            </button>
           </div>
+          {showCalendar && renderCalendar()}
         </div>
         <div className="filter-category">
           <h3>By Type</h3>
