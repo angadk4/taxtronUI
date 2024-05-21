@@ -270,9 +270,15 @@ input[type="checkbox"]:checked:after {
   justify-content: center;
   align-items: center;
   margin-top: 15px;
+  list-style: none;
+  padding: 0;
 }
 
-.pagination button {
+.pagination li {
+  margin: 0 5px;
+}
+
+.pagination a {
   background-color: #4CAF50;
   color: #fff;
   border: none;
@@ -280,13 +286,20 @@ input[type="checkbox"]:checked:after {
   margin: 0 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  border-radius: 4px;
+  text-decoration: none;
 }
 
-.pagination button:hover {
+.pagination a:hover {
   background-color: #337435;
 }
 
-.pagination button:disabled {
+.pagination .active a {
+  background-color: #337435;
+  pointer-events: none;
+}
+
+.pagination .disabled a {
   background-color: #ccc;
   cursor: not-allowed;
 }

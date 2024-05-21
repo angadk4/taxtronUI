@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import ReactPaginate from 'react-paginate';
 import './filtertable.css';
 import clientsData from './clientdata.json';
 import { parseISO, format } from 'date-fns';
@@ -41,9 +42,8 @@ const FilterTable = () => {
     failed: false,
     cancelled: false
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [clients, setClients] = useState({ T1: [], T2: [] });
-  const [loadedPages, setLoadedPages] = useState({ T1: 0, T2: 0 });
+  const [currentPage, setCurrentPage] = useState(0);
+  const [filteredClients, setFilteredClients] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const itemsPerPage = 50;
 
@@ -53,38 +53,38 @@ const FilterTable = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setCurrentPage(1);
+    setCurrentPage(0);
     handleReset();
   };
 
   const applyFilters = () => {
-    setAppliedFilters({
+    const filters = {
       selectedBirthMonth,
       selectedBirthDate,
       checkBoxState,
-    });
-    setCurrentPage(1);
-    loadClients(1, true);
+    };
+    setAppliedFilters(filters);
+    setCurrentPage(0); // Reset to first page
+    loadClients(filters);
   };
 
-  const loadClients = useCallback((page, reset = false) => {
-    const offset = (page - 1) * itemsPerPage;
+  const loadClients = useCallback((filters) => {
     let filteredData = clientsData.filter(client => client.productCode === activeTab);
-  
-    if (appliedFilters.selectedBirthMonth) {
+
+    if (filters.selectedBirthMonth) {
       filteredData = filteredData.filter(client => {
         const dob = new Date(client.dob);
-        return dob.toLocaleString('en-US', { month: 'long' }) === appliedFilters.selectedBirthMonth;
+        return dob.toLocaleString('en-US', { month: 'long' }) === filters.selectedBirthMonth;
       });
     }
-  
-    if (appliedFilters.selectedBirthDate) {
+
+    if (filters.selectedBirthDate) {
       filteredData = filteredData.filter(client => {
         const dob = new Date(client.dob);
-        return dob.getDate() === parseInt(appliedFilters.selectedBirthDate, 10);
+        return dob.getDate() === parseInt(filters.selectedBirthDate, 10);
       });
     }
-  
+
     const queryParts = searchQuery.toLowerCase().split(' ').filter(Boolean);
     if (queryParts.length > 0) {
       filteredData = filteredData.filter(client => {
@@ -93,48 +93,18 @@ const FilterTable = () => {
         );
       });
     }
-  
-    const newClients = filteredData.slice(offset, offset + itemsPerPage);
-  
-    setClients(prevClients => ({
-      ...prevClients,
-      [activeTab]: reset ? newClients : [...prevClients[activeTab], ...newClients]
-    }));
-  
-    setLoadedPages(prevLoadedPages => ({
-      ...prevLoadedPages,
-      [activeTab]: reset ? 1 : prevLoadedPages[activeTab] + 1
-    }));
-  }, [activeTab, appliedFilters, searchQuery]);
-  
-  
+
+    setFilteredClients(filteredData);
+  }, [activeTab, searchQuery]);
 
   useEffect(() => {
-    loadClients(1, true);
-  }, [activeTab, loadClients]);
+    loadClients(appliedFilters);
+  }, [activeTab, appliedFilters, loadClients]);
 
   useEffect(() => {
-    setCurrentPage(1);
-    loadClients(1, true);
-  }, [searchQuery, loadClients]);
-
-  const filteredClients = useMemo(() => {
-    const clientsToFilter = clients[activeTab];
-
-    const queryParts = searchQuery.toLowerCase().split(' ').filter(Boolean);
-
-    return clientsToFilter.filter(client => {
-      const dob = new Date(client.dob);
-      const matchesMonth = appliedFilters.selectedBirthMonth ? dob.toLocaleString('en-US', { month: 'long' }) === appliedFilters.selectedBirthMonth : true;
-      const matchesDate = appliedFilters.selectedBirthDate ? (dob.getDate() === parseInt(appliedFilters.selectedBirthDate, 10)) : true;
-
-      const matchesSearchQuery = queryParts.every(queryPart =>
-        Object.values(client).some(value => normalizeString(String(value)).includes(queryPart))
-      );
-
-      return matchesMonth && matchesDate && matchesSearchQuery;
-    });
-  }, [clients, activeTab, appliedFilters, searchQuery]);
+    setCurrentPage(0); // Reset to first page
+    loadClients(appliedFilters);
+  }, [searchQuery, appliedFilters, loadClients]);
 
   const sortedClients = useMemo(() => {
     const sorted = [...filteredClients];
@@ -150,7 +120,7 @@ const FilterTable = () => {
   }, [filteredClients, sortConfig]);
 
   const paginatedClients = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
+    const startIndex = currentPage * itemsPerPage;
     return sortedClients.slice(startIndex, startIndex + itemsPerPage);
   }, [sortedClients, currentPage]);
 
@@ -199,7 +169,7 @@ const FilterTable = () => {
   const handleMonthChange = (e) => {
     setSelectedBirthMonth(e.target.value);
     setShowCalendar(false);
-    setSelectedBirthDate(''); // Clear the date selection
+    setSelectedBirthDate('');
   };
 
   const handleDateChange = (date) => {
@@ -225,23 +195,8 @@ const FilterTable = () => {
       cancelled: false
     });
     setAppliedFilters({});
-    setCurrentPage(1);
-    loadClients(1, true);
-  };
-
-  const handleNextPage = () => {
-    if (paginatedClients.length === itemsPerPage) {
-      const nextPage = currentPage + 1;
-      setCurrentPage(nextPage);
-  
-      if (nextPage > loadedPages[activeTab]) {
-        loadClients(nextPage);
-      }
-    }
-  };  
-
-  const handlePreviousPage = () => {
-    setCurrentPage(prevPage => (prevPage > 1 ? prevPage - 1 : 1));
+    setCurrentPage(0);
+    setFilteredClients([]);
   };
 
   function renderCheckbox(name, label) {
@@ -263,7 +218,7 @@ const FilterTable = () => {
     if (!selectedBirthMonth) return null;
 
     const monthIndex = months.indexOf(selectedBirthMonth);
-    const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate(); // Use any non-leap year for consistency
+    const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate();
 
     return (
       <div className="calendar-container">
@@ -355,7 +310,10 @@ const FilterTable = () => {
             type="text"
             placeholder="Search Fields..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(0); // Reset to first page
+            }}
           />
         </div>
         <div className="tabcontent active">
@@ -385,10 +343,18 @@ const FilterTable = () => {
               ))}
             </tbody>
           </table>
-          <div className="pagination">
-            <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous</button>
-            <button onClick={handleNextPage} disabled={paginatedClients.length < itemsPerPage}>Next</button>
-          </div>
+          <ReactPaginate
+            previousLabel={'Previous'}
+            nextLabel={'Next'}
+            breakLabel={'...'}
+            pageCount={Math.ceil(sortedClients.length / itemsPerPage)}
+            marginPagesDisplayed={2}
+            pageRangeDisplayed={5}
+            onPageChange={({ selected }) => setCurrentPage(selected)}
+            containerClassName={'pagination'}
+            activeClassName={'active'}
+            forcePage={currentPage} // Ensure pagination component reflects current page
+          />
         </div>
       </div>
     </div>
