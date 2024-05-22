@@ -22,6 +22,18 @@ const parseCustomDate = (dateStr) => {
 
 const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
 
+const ToggleSwitch = ({ label, isChecked, onChange }) => {
+  return (
+    <div className="toggle-switch">
+      <span className="switch-label">{isChecked ? 'Prev Year' : 'Current Year'}</span>
+      <label>
+        <input type="checkbox" checked={isChecked} onChange={onChange} />
+        <span className="slider"></span>
+      </label>
+    </div>
+  );
+};
+
 const FilterTable = () => {
   const [activeTab, setActiveTab] = useState('T1');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -30,21 +42,17 @@ const FilterTable = () => {
   const [selectedBirthDate, setSelectedBirthDate] = useState('');
   const [appliedFilters, setAppliedFilters] = useState({});
   const [checkBoxState, setCheckBoxState] = useState({
-    selfEmploymentIncome: false,
-    nonResidentReturns: false,
-    balanceOwing: false,
-    gstPayroll: false,
-    returnEFile: false,
-    t1135EFile: false,
-    padEFile: false,
-    succeeded: false,
-    pending: false,
-    failed: false,
-    cancelled: false
+    selfEmployed: false,
+    foreignTaxFilingRequired: false,
+    discountedReturn: false,
+    gstDue: false,
+    expectedRefund: false,
+    payrollSlipsDue: false,
   });
   const [currentPage, setCurrentPage] = useState(0);
   const [filteredClients, setFilteredClients] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [filterYear, setFilterYear] = useState('Cur Yr'); // New state for the switch
   const itemsPerPage = 50;
 
   const months = useMemo(() =>
@@ -69,20 +77,47 @@ const FilterTable = () => {
   };
 
   const loadClients = useCallback((filters) => {
-    let filteredData = clientsData.filter(client => client.productCode === activeTab);
+    let filteredData = clientsData.filter(client => client.ProductCode === activeTab);
 
     if (filters.selectedBirthMonth) {
       filteredData = filteredData.filter(client => {
-        const dob = new Date(client.dob);
+        const dob = new Date(client.DOB);
         return dob.toLocaleString('en-US', { month: 'long' }) === filters.selectedBirthMonth;
       });
     }
 
     if (filters.selectedBirthDate) {
       filteredData = filteredData.filter(client => {
-        const dob = new Date(client.dob);
+        const dob = new Date(client.DOB);
         return dob.getDate() === parseInt(filters.selectedBirthDate, 10);
       });
+    }
+
+    const checkBoxState = filters.checkBoxState || {};
+    const prefix = filterYear === 'Cur Yr' ? '' : 'Pre_';
+
+    if (checkBoxState.selfEmployed) {
+      filteredData = filteredData.filter(client => client[`${prefix}bSelfEmployed`] || client[`${prefix}bSpSelfEmployed`]);
+    }
+
+    if (checkBoxState.foreignTaxFilingRequired) {
+      filteredData = filteredData.filter(client => client[`${prefix}bForeignTaxFilingRequired`] || client[`${prefix}bSpForeignTaxFilingRequired`]);
+    }
+
+    if (checkBoxState.discountedReturn) {
+      filteredData = filteredData.filter(client => client[`${prefix}bDicountedRet`] || client[`${prefix}bSpDicountedRet`]);
+    }
+
+    if (checkBoxState.gstDue) {
+      filteredData = filteredData.filter(client => client[`${prefix}bGSTDue`] || client[`${prefix}bSpGSTDue`]);
+    }
+
+    if (checkBoxState.expectedRefund) {
+      filteredData = filteredData.filter(client => client[`${prefix}bExpectedRefund`]);
+    }
+
+    if (checkBoxState.payrollSlipsDue) {
+      filteredData = filteredData.filter(client => client[`${prefix}bPayRollSlipsDue`] || client[`${prefix}bSpPayRollSlipsDue`]);
     }
 
     const queryParts = searchQuery.toLowerCase().split(' ').filter(Boolean);
@@ -95,7 +130,7 @@ const FilterTable = () => {
     }
 
     setFilteredClients(filteredData);
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, filterYear]);
 
   useEffect(() => {
     loadClients(appliedFilters);
@@ -110,7 +145,7 @@ const FilterTable = () => {
     const sorted = [...filteredClients];
     if (sortConfig.key) {
       sorted.sort((a, b) => {
-        if (sortConfig.key === 'lastUpdated') {
+        if (sortConfig.key === 'LastUpdated') {
           return (new Date(a[sortConfig.key]) - new Date(b[sortConfig.key])) * (sortConfig.direction === 'asc' ? 1 : -1);
         }
         return (a[sortConfig.key] || '').localeCompare(b[sortConfig.key] || '') * (sortConfig.direction === 'asc' ? 1 : -1);
@@ -133,17 +168,17 @@ const FilterTable = () => {
 
   const columns = activeTab === 'T1'
     ? [
-        { key: 'firstnames', label: 'Name' },
-        { key: 'sin', label: 'SIN' },
-        { key: 'phoneNo', label: 'Phone' },
-        { key: 'email', label: 'Email' },
-        { key: 'lastUpdated', label: 'Last Updated' },
+        { key: 'Firstnames', label: 'Name' },
+        { key: 'SIN', label: 'SIN' },
+        { key: 'PhoneNo', label: 'Phone' },
+        { key: 'Email', label: 'Email' },
+        { key: 'LastUpdated', label: 'Last Updated' },
       ]
     : [
-        { key: 'companyName', label: 'Company Name' },
-        { key: 'bnFull', label: 'Business Number' },
-        { key: 'fyEnd', label: 'Year End' },
-        { key: 'lastUpdated', label: 'Last Updated' },
+        { key: 'CompanyName', label: 'Company Name' },
+        { key: 'BNFull', label: 'Business Number' },
+        { key: 'FYEnd', label: 'Year End' },
+        { key: 'LastUpdated', label: 'Last Updated' },
       ];
 
   useEffect(() => {
@@ -182,21 +217,21 @@ const FilterTable = () => {
     setSelectedBirthDate('');
     setSearchQuery('');
     setCheckBoxState({
-      selfEmploymentIncome: false,
-      nonResidentReturns: false,
-      balanceOwing: false,
-      gstPayroll: false,
-      returnEFile: false,
-      t1135EFile: false,
-      padEFile: false,
-      succeeded: false,
-      pending: false,
-      failed: false,
-      cancelled: false
+      selfEmployed: false,
+      foreignTaxFilingRequired: false,
+      discountedReturn: false,
+      gstDue: false,
+      expectedRefund: false,
+      payrollSlipsDue: false,
     });
     setAppliedFilters({});
     setCurrentPage(0);
     setFilteredClients([]);
+  };
+
+  const handleFilterYearChange = () => {
+    setFilterYear(prev => prev === 'Cur Yr' ? 'Prev Yr' : 'Cur Yr');
+    handleReset();
   };
 
   function renderCheckbox(name, label) {
@@ -272,28 +307,24 @@ const FilterTable = () => {
           </div>
           {showCalendar && renderCalendar()}
         </div>
-        <div className="filter-category">
-          <h3>By Type</h3>
-          {renderCheckbox("selfEmploymentIncome", "Self-Employment Income")}
-          {renderCheckbox("nonResidentReturns", "Non-Resident Returns")}
-          {renderCheckbox("balanceOwing", "Balance Owing")}
-          {renderCheckbox("gstPayroll", "GST Payroll")}
-        </div>
-        
-        <div className="filter-category">
-          <h3>Filing Status</h3>
-          {renderCheckbox("returnEFile", "Return ready to e-file")}
-          {renderCheckbox("t1135EFile", "T1135 ready to e-file")}
-          {renderCheckbox("padEFile", "PAD ready to e-file")}
-        </div>
 
         <div className="filter-category">
-          <h3>Payment Status</h3>
-          {renderCheckbox("succeeded", "Succeeded")}
-          {renderCheckbox("pending", "Pending")}
-          {renderCheckbox("failed", "Failed")}
-          {renderCheckbox("cancelled", "Cancelled")}
+          <h3>Client Filters</h3>
+          <div className="filter-year-toggle">
+            <ToggleSwitch
+              label={filterYear}
+              isChecked={filterYear === 'Prev Yr'}
+              onChange={handleFilterYearChange}
+            />
+          </div>
+          {renderCheckbox("selfEmployed", "Self Employed")}
+          {renderCheckbox("foreignTaxFilingRequired", "Foreign Tax Filing Required")}
+          {renderCheckbox("discountedReturn", "Discounted Return")}
+          {renderCheckbox("gstDue", "GST Due")}
+          {renderCheckbox("expectedRefund", "Expected Refund")}
+          {renderCheckbox("payrollSlipsDue", "Payroll Slips Due")}
         </div>
+
         <div className="buttons">
           <button onClick={handleReset} className="reset-button">Reset</button>
           <button className="apply-button" onClick={applyFilters}>Apply</button>
@@ -332,9 +363,9 @@ const FilterTable = () => {
                 <tr key={index}>
                   {columns.map((column) => (
                     <td key={column.key}>
-                      {column.key === 'firstnames'
-                        ? `${client.firstnames} ${client.surname}`
-                        : column.key === 'lastUpdated'
+                      {column.key === 'Firstnames'
+                        ? `${client.Firstnames} ${client.Surname}`
+                        : column.key === 'LastUpdated'
                         ? formatDate(client[column.key])
                         : client[column.key]}
                     </td>
@@ -347,7 +378,7 @@ const FilterTable = () => {
             previousLabel={'‹'}
             nextLabel={'›'}
             breakLabel={'...'}
-            pageCount={Math.ceil(sortedClients.length / itemsPerPage)}
+            pageCount={Math.max(Math.ceil(sortedClients.length / itemsPerPage), 1)}
             marginPagesDisplayed={1}
             pageRangeDisplayed={5}
             onPageChange={({ selected }) => setCurrentPage(selected)}
@@ -362,7 +393,7 @@ const FilterTable = () => {
             nextLinkClassName={'page-link'}
             breakClassName={'page-item'}
             breakLinkClassName={'page-link'}
-            forcePage={currentPage} // Ensure pagination component reflects current page
+            forcePage={Math.min(currentPage, Math.max(Math.ceil(sortedClients.length / itemsPerPage) - 1, 0))} // Ensure pagination component reflects current page
           />
         </div>
       </div>
