@@ -269,39 +269,52 @@ input[type="checkbox"]:checked:after {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 15px;
+  margin-top: 25px;
+  margin-bottom: 10px;
   list-style: none;
   padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .pagination li {
-  margin: 0 5px;
+  margin: 0 3px;
 }
 
 .pagination a {
   background-color: #4CAF50;
   color: #fff;
   border: none;
-  padding: 8px 12px;
-  margin: 0 5px;
+  padding: 6px 12px;
+  margin: 0 3px;
   cursor: pointer;
-  transition: background-color 0.3s;
-  border-radius: 4px;
+  transition: background-color 0.3s, transform 0.2s;
+  border-radius: 12px;
   text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 30px;
+  height: 24px;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .pagination a:hover {
   background-color: #337435;
+  transform: translateY(-2px);
 }
 
 .pagination .active a {
   background-color: #337435;
   pointer-events: none;
+  transform: scale(1.1);
 }
 
 .pagination .disabled a {
   background-color: #ccc;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .calendar-container {

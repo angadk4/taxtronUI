@@ -344,15 +344,24 @@ const FilterTable = () => {
             </tbody>
           </table>
           <ReactPaginate
-            previousLabel={'Previous'}
-            nextLabel={'Next'}
+            previousLabel={'‹'}
+            nextLabel={'›'}
             breakLabel={'...'}
             pageCount={Math.ceil(sortedClients.length / itemsPerPage)}
-            marginPagesDisplayed={2}
+            marginPagesDisplayed={1}
             pageRangeDisplayed={5}
             onPageChange={({ selected }) => setCurrentPage(selected)}
             containerClassName={'pagination'}
             activeClassName={'active'}
+            disabledClassName={'disabled'}
+            pageClassName={'page-item'}
+            pageLinkClassName={'page-link'}
+            previousClassName={'page-item'}
+            previousLinkClassName={'page-link'}
+            nextClassName={'page-item'}
+            nextLinkClassName={'page-link'}
+            breakClassName={'page-item'}
+            breakLinkClassName={'page-link'}
             forcePage={currentPage} // Ensure pagination component reflects current page
           />
         </div>
