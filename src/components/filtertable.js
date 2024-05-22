@@ -25,11 +25,11 @@ const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
 const ToggleSwitch = ({ label, isChecked, onChange }) => {
   return (
     <div className="toggle-switch">
-      <span className="switch-label">{isChecked ? 'Prev Year' : 'Current Year'}</span>
       <label>
         <input type="checkbox" checked={isChecked} onChange={onChange} />
         <span className="slider"></span>
       </label>
+      <span className="switch-label">{isChecked ? 'Previous Year' : 'Current Year'}</span>
     </div>
   );
 };
@@ -52,8 +52,8 @@ const FilterTable = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [filteredClients, setFilteredClients] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [filterYear, setFilterYear] = useState('Cur Yr'); // New state for the switch
-  const itemsPerPage = 50;
+  const [toggleState, setToggleState] = useState('Cur Yr'); // Separate state for the toggle
+  const itemsPerPage = 15;
 
   const months = useMemo(() =>
     Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
@@ -70,6 +70,7 @@ const FilterTable = () => {
       selectedBirthMonth,
       selectedBirthDate,
       checkBoxState,
+      filterYear: toggleState, // Use toggle state here
     };
     setAppliedFilters(filters);
     setCurrentPage(0); // Reset to first page
@@ -94,7 +95,7 @@ const FilterTable = () => {
     }
 
     const checkBoxState = filters.checkBoxState || {};
-    const prefix = filterYear === 'Cur Yr' ? '' : 'Pre_';
+    const prefix = filters.filterYear === 'Cur Yr' ? '' : 'Pre_';
 
     if (checkBoxState.selfEmployed) {
       filteredData = filteredData.filter(client => client[`${prefix}bSelfEmployed`] || client[`${prefix}bSpSelfEmployed`]);
@@ -130,7 +131,7 @@ const FilterTable = () => {
     }
 
     setFilteredClients(filteredData);
-  }, [activeTab, searchQuery, filterYear]);
+  }, [activeTab, searchQuery]);
 
   useEffect(() => {
     loadClients(appliedFilters);
@@ -230,8 +231,7 @@ const FilterTable = () => {
   };
 
   const handleFilterYearChange = () => {
-    setFilterYear(prev => prev === 'Cur Yr' ? 'Prev Yr' : 'Cur Yr');
-    handleReset();
+    setToggleState(prev => prev === 'Cur Yr' ? 'Prev Yr' : 'Cur Yr');
   };
 
   function renderCheckbox(name, label) {
@@ -256,20 +256,22 @@ const FilterTable = () => {
     const daysInMonth = new Date(2024, monthIndex + 1, 0).getDate();
 
     return (
-      <div className="calendar-container">
-        <div className="calendar-header">
-          <h4>{selectedBirthMonth}</h4>
-        </div>
-        <div className="calendar-grid">
-          {[...Array(daysInMonth)].map((_, i) => (
-            <button
-              key={i + 1}
-              className={`calendar-day ${selectedBirthDate === (i + 1) ? 'selected' : ''}`}
-              onClick={() => handleDateChange(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
+      <div className="calendar-overlay" onClick={() => setShowCalendar(false)}>
+        <div className="calendar-container" onClick={(e) => e.stopPropagation()}>
+          <div className="calendar-header">
+            <h4>{selectedBirthMonth}</h4>
+          </div>
+          <div className="calendar-grid">
+            {[...Array(daysInMonth)].map((_, i) => (
+              <button
+                key={i + 1}
+                className={`calendar-day ${selectedBirthDate === (i + 1) ? 'selected' : ''}`}
+                onClick={() => handleDateChange(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -312,8 +314,8 @@ const FilterTable = () => {
           <h3>Client Filters</h3>
           <div className="filter-year-toggle">
             <ToggleSwitch
-              label={filterYear}
-              isChecked={filterYear === 'Prev Yr'}
+              label={toggleState}
+              isChecked={toggleState === 'Prev Yr'}
               onChange={handleFilterYearChange}
             />
           </div>

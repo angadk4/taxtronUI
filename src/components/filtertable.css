@@ -13,6 +13,7 @@
   border-radius: 10px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   height: fit-content;
+  position: relative; /* Ensure calendar stays within the filter container */
 }
 
 .table-container {
@@ -317,13 +318,25 @@ input[type="checkbox"]:checked:after {
   pointer-events: none;
 }
 
+.calendar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
 .calendar-container {
   background-color: #fff;
   border: 2px solid #ddd;
   border-radius: 10px;
   padding: 10px;
   width: fit-content;
-  margin-top: 10px;
 }
 
 .calendar-header {
@@ -359,16 +372,16 @@ input[type="checkbox"]:checked:after {
 /* Toggle Switch Styles */
 .toggle-switch {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   margin-bottom: 15px;
 }
 
 .toggle-switch label {
   position: relative;
   display: inline-block;
-  width: 50px;
-  height: 24px;
+  width: 60px;  /* Medium width */
+  height: 30px;  /* Medium height */
   margin: 0 10px;
 }
 
@@ -387,14 +400,14 @@ input[type="checkbox"]:checked:after {
   bottom: 0;
   background-color: #ccc;
   transition: 0.4s;
-  border-radius: 24px;
+  border-radius: 30px;  /* Medium border-radius */
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 16px;
-  width: 16px;
+  height: 22px;  /* Medium size */
+  width: 22px;  /* Medium size */
   left: 4px;
   bottom: 4px;
   background-color: white;
@@ -407,16 +420,12 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(30px);  /* Adjusted for medium size */
 }
 
 .switch-label {
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 12px;  /* Same font size */
   color: #333;
-}
-
-.filter-year-toggle {
-  display: flex;
-  justify-content: center;
+  font-weight: 600;
+  margin-top: 3px;  /* Space between switch and label */
 }
