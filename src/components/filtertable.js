@@ -22,14 +22,21 @@ const parseCustomDate = (dateStr) => {
 
 const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
 
-const ToggleSwitch = ({ label, isChecked, onChange }) => {
+const YearSelector = ({ selectedYear, onChange }) => {
   return (
-    <div className="toggle-switch">
-      <label>
-        <input type="checkbox" checked={isChecked} onChange={onChange} />
-        <span className="slider"></span>
-      </label>
-      <span className="switch-label">{isChecked ? 'Previous Years' : 'Current Year'}</span>
+    <div className="year-selector">
+      <button
+        className={`year-button ${selectedYear === 'Cur Yr' ? 'active' : ''}`}
+        onClick={() => onChange('Cur Yr')}
+      >
+        Current Year
+      </button>
+      <button
+        className={`year-button ${selectedYear === 'Prev Yr' ? 'active' : ''}`}
+        onClick={() => onChange('Prev Yr')}
+      >
+        Previous Year
+      </button>
     </div>
   );
 };
@@ -52,7 +59,8 @@ const FilterTable = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [filteredClients, setFilteredClients] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [toggleState, setToggleState] = useState('Cur Yr'); // Separate state for the toggle
+  const [selectedYear, setSelectedYear] = useState('Cur Yr');
+  const [selectedLocation, setSelectedLocation] = useState('');
   const itemsPerPage = 15;
 
   const months = useMemo(() =>
@@ -70,10 +78,11 @@ const FilterTable = () => {
       selectedBirthMonth,
       selectedBirthDate,
       checkBoxState,
-      filterYear: toggleState, // Use toggle state here
+      filterYear: selectedYear,
+      selectedLocation,
     };
     setAppliedFilters(filters);
-    setCurrentPage(0); // Reset to first page
+    setCurrentPage(0);
     loadClients(filters);
   };
 
@@ -92,6 +101,10 @@ const FilterTable = () => {
         const dob = new Date(client.DOB);
         return dob.getDate() === parseInt(filters.selectedBirthDate, 10);
       });
+    }
+
+    if (filters.selectedLocation) {
+      filteredData = filteredData.filter(client => client.Location === filters.selectedLocation);
     }
 
     const checkBoxState = filters.checkBoxState || {};
@@ -138,7 +151,7 @@ const FilterTable = () => {
   }, [activeTab, appliedFilters, loadClients]);
 
   useEffect(() => {
-    setCurrentPage(0); // Reset to first page
+    setCurrentPage(0);
     loadClients(appliedFilters);
   }, [searchQuery, appliedFilters, loadClients]);
 
@@ -167,7 +180,7 @@ const FilterTable = () => {
     }));
   };
 
-  const columns = activeTab === 'T1'
+  const columns = activeTab === 'T1' || activeTab === 'T3'
     ? [
         { key: 'Firstnames', label: 'Name' },
         { key: 'SIN', label: 'SIN' },
@@ -217,6 +230,7 @@ const FilterTable = () => {
     setSelectedBirthMonth('');
     setSelectedBirthDate('');
     setSearchQuery('');
+    setSelectedLocation('');
     setCheckBoxState({
       selfEmployed: false,
       foreignTaxFilingRequired: false,
@@ -228,10 +242,15 @@ const FilterTable = () => {
     setAppliedFilters({});
     setCurrentPage(0);
     setFilteredClients([]);
+    setSelectedYear('Cur Yr');
   };
 
-  const handleFilterYearChange = () => {
-    setToggleState(prev => prev === 'Cur Yr' ? 'Prev Yr' : 'Cur Yr');
+  const handleYearChange = (year) => {
+    setSelectedYear(year);
+  };
+
+  const handleLocationChange = (e) => {
+    setSelectedLocation(e.target.value);
   };
 
   function renderCheckbox(name, label) {
@@ -281,6 +300,23 @@ const FilterTable = () => {
     <div className="main-content">
       <div className="filter-container">
         <div className="filter-category">
+          <h3>By Location</h3>
+          <div className="filter-item">
+            <label htmlFor="location-select">Location:</label>
+            <select
+              id="location-select"
+              value={selectedLocation}
+              onChange={handleLocationChange}
+              className="custom-select"
+            >
+              <option value="">Select a location</option>
+              <option value="HeadOffice">Main Office</option>
+              <option value="SubOffice">Sub Office</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="filter-category">
           <h3>By Birthdate</h3>
           <div className="filter-item">
             <label htmlFor="month-select">Birth Month:</label>
@@ -313,11 +349,7 @@ const FilterTable = () => {
         <div className="filter-category">
           <h3>Client Filters</h3>
           <div className="filter-year-toggle">
-            <ToggleSwitch
-              label={toggleState}
-              isChecked={toggleState === 'Prev Yr'}
-              onChange={handleFilterYearChange}
-            />
+            <YearSelector selectedYear={selectedYear} onChange={handleYearChange} />
           </div>
           {renderCheckbox("selfEmployed", "Self Employed")}
           {renderCheckbox("foreignTaxFilingRequired", "Foreign Tax Filing Required")}
@@ -337,6 +369,7 @@ const FilterTable = () => {
         <div className="tab">
           <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => handleTabChange('T1')}>T1</button>
           <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => handleTabChange('T2')}>T2</button>
+          <button className={`tablinks ${activeTab === 'T3' ? 'active' : ''}`} onClick={() => handleTabChange('T3')}>T3</button>
         </div>
         <div className="search-bar">
           <input
@@ -345,7 +378,7 @@ const FilterTable = () => {
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setCurrentPage(0); // Reset to first page
+              setCurrentPage(0);
             }}
           />
         </div>
@@ -395,7 +428,7 @@ const FilterTable = () => {
             nextLinkClassName={'page-link'}
             breakClassName={'page-item'}
             breakLinkClassName={'page-link'}
-            forcePage={Math.min(currentPage, Math.max(Math.ceil(sortedClients.length / itemsPerPage) - 1, 0))} // Ensure pagination component reflects current page
+            forcePage={Math.min(currentPage, Math.max(Math.ceil(sortedClients.length / itemsPerPage) - 1, 0))}
           />
         </div>
       </div>

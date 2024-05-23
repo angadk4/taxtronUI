@@ -8,8 +8,6 @@ function App() {
   return (
     <div className="App">
       <div className="top-section">
-        <Dashboard />
-        <Reminders />
       </div>
       <div className="bottom-section">
         <FilterTable />
