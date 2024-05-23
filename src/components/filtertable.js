@@ -29,7 +29,7 @@ const ToggleSwitch = ({ label, isChecked, onChange }) => {
         <input type="checkbox" checked={isChecked} onChange={onChange} />
         <span className="slider"></span>
       </label>
-      <span className="switch-label">{isChecked ? 'Previous Year' : 'Current Year'}</span>
+      <span className="switch-label">{isChecked ? 'Previous Years' : 'Current Year'}</span>
     </div>
   );
 };
