@@ -1,18 +1,40 @@
 import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
 import './App.css';
-import Dashboard from './components/dashboard';
-import Reminders from './components/reminders';
 import FilterTable from './components/filtertable';
+import Returns from './components/returns';
+
+function NavigationButton() {
+  const location = useLocation();
+
+  return (
+    <div className="top-section">
+      {location.pathname === '/returns' ? (
+        <Link to="/">
+          <button className="navigate-button">Back to Filter Table</button>
+        </Link>
+      ) : (
+        <Link to="/returns">
+          <button className="navigate-button">Go to Returns</button>
+        </Link>
+      )}
+    </div>
+  );
+}
 
 function App() {
   return (
-    <div className="App">
-      <div className="top-section">
+    <Router>
+      <div className="App">
+        <NavigationButton />
+        <div className="bottom-section">
+          <Routes>
+            <Route path="/" element={<FilterTable />} />
+            <Route path="/returns" element={<Returns />} />
+          </Routes>
+        </div>
       </div>
-      <div className="bottom-section">
-        <FilterTable />
-      </div>
-    </div>
+    </Router>
   );
 }
 

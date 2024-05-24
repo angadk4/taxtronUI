@@ -1,25 +1,72 @@
 import React, { useState } from 'react';
 import ReactPaginate from 'react-paginate';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import './filtertable.css';
 
-const FilterTable = () => {
+const Returns = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [isStartOpen, setIsStartOpen] = useState(false);
+  const [isEndOpen, setIsEndOpen] = useState(false);
   const itemsPerPage = 15;
 
   const columns = [
+    { key: 'Tags', label: 'Tags' },
     { key: 'Name', label: 'Name' },
-    { key: 'SIN', label: 'SIN' },
-    { key: 'Phone', label: 'Phone' },
-    { key: 'Email', label: 'Email' },
+    { key: 'Spouse', label: 'Spouse' },
+    { key: 'FileStatus', label: 'File Status' },
     { key: 'LastUpdated', label: 'Last Updated' },
   ];
+
+  const handleStartDateChange = (date) => {
+    setStartDate(date);
+    setIsStartOpen(false);
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
+    setIsEndOpen(false);
+  };
 
   return (
     <div className="main-content">
       <div className="filter-container">
         <div className="filter-category">
           <h3>Date Range</h3>
-          {/* Date Range Filter Section */}
+          <div className="date-picker-container">
+            <button className="date-button" onClick={() => setIsStartOpen(true)}>Select From Date</button>
+            {isStartOpen && (
+              <DatePicker
+                selected={startDate}
+                onChange={handleStartDateChange}
+                onClickOutside={() => setIsStartOpen(false)}
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
+                inline
+              />
+            )}
+          </div>
+          <div className="date-picker-container">
+            <button className="date-button" onClick={() => setIsEndOpen(true)}>Select To Date</button>
+            {isEndOpen && (
+              <DatePicker
+                selected={endDate}
+                onChange={handleEndDateChange}
+                onClickOutside={() => setIsEndOpen(false)}
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
+                inline
+              />
+            )}
+          </div>
+          <p className="date-range-display">
+            From: {startDate ? startDate.toLocaleDateString() : 'Select a date'}<br />
+            To: {endDate ? endDate.toLocaleDateString() : 'Select a date'}
+          </p>
         </div>
       </div>
 
@@ -75,4 +122,4 @@ const FilterTable = () => {
   );
 };
 
-export default FilterTable;
+export default Returns;
