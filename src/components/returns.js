@@ -27,19 +27,28 @@ const Returns = () => {
   const itemsPerPage = 15;
 
   useEffect(() => {
-    // Fetch client data based on clientId
-    fetch(`./returndata/${clientId}.json`)
-      .then(response => response.json())
-      .then(data => {
+    const fetchClientData = async () => {
+      try {
+        console.log(`Fetching data for client ID: ${clientId}`);
+        const response = await fetch(`./returndata/${clientId}.json`);
+        console.log(`Fetch response status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error('Client data not found');
+        }
+        const data = await response.json();
+        console.log('Fetched data:', data);
         setClientData(data);
-        setReturnsData(data.returns);
-      })
-      .catch(error => console.error('Error fetching client data:', error));
+        setReturnsData(data.returns || data);
+      } catch (error) {
+        console.error('Error fetching client data:', error);
+      }
+    };
+    fetchClientData();
   }, [clientId]);
 
   const columns = [
     { key: 'Tags', label: 'Tags' },
-    { key: 'Name', label: 'Name' },
+    { key: 'Firstnames', label: 'Name' },
     { key: 'Spouse', label: 'Spouse' },
     { key: 'FileStatus', label: 'File Status' },
     { key: 'LastUpdated', label: 'Last Updated' },
@@ -87,7 +96,6 @@ const Returns = () => {
   };
 
   const applyFilters = () => {
-    // Add filter application logic here
     console.log('Applying filters...');
   };
 
@@ -96,10 +104,10 @@ const Returns = () => {
       {clientData ? (
         <>
           <div className="client-info">
-            <p><strong>Client Name</strong> <span>{clientData.clientName}</span></p>
-            <p><strong>Client ID</strong> <span>{clientData.clientId}</span></p>
-            <p><strong>Phone Number</strong> <span>{clientData.phoneNumber}</span></p>
-            <p><strong>Email</strong> <span>{clientData.email}</span></p>
+            <p><strong>Client Name</strong> <span>{clientData[0].Firstnames} {clientData[0].Surname}</span></p>
+            <p><strong>Client ID</strong> <span>{clientId}</span></p>
+            <p><strong>Phone Number</strong> <span>{clientData[0].PhoneNo}</span></p>
+            <p><strong>Email</strong> <span>{clientData[0].Email}</span></p>
           </div>
           
           <div className="status-container">

@@ -63,6 +63,7 @@ const FilterTable = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedYear, setSelectedYear] = useState('Cur Yr');
   const [selectedLocation, setSelectedLocation] = useState('');
+  const [error, setError] = useState('');
   const itemsPerPage = 15;
 
   const months = useMemo(() =>
@@ -182,8 +183,22 @@ const FilterTable = () => {
     }));
   };
 
-  const handleClientClick = (clientId) => {
-    navigate(`/returns/${clientId}`);
+  const handleClientClick = async (clientId) => {
+    console.log(`Attempting to fetch data for client ID: ${clientId}`);
+    try {
+      const response = await fetch(`./returndata/${clientId}.json`);
+      console.log(`Fetch response status: ${response.status}`);
+      if (response.ok) {
+        navigate(`/returns/${clientId}`);
+      } else {
+        setError('Client return data not found.');
+        setTimeout(() => setError(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error fetching client return data:', error);
+      setError('Error fetching client return data.');
+      setTimeout(() => setError(''), 3000);
+    }
   };
 
   const columns = activeTab === 'T1' || activeTab === 'T3'
@@ -388,6 +403,7 @@ const FilterTable = () => {
             }}
           />
         </div>
+        {error && <div className="error-popup">{error}</div>}
         <div className="tabcontent active">
           <table className="custom-table">
             <thead>
@@ -401,7 +417,7 @@ const FilterTable = () => {
             </thead>
             <tbody>
               {paginatedClients.map((client, index) => (
-                <tr key={index} onClick={() => handleClientClick(client.clientId)}>
+                <tr key={index} onClick={() => handleClientClick(client.ClientId)}>
                   {columns.map((column) => (
                     <td key={column.key}>
                       {column.key === 'Firstnames'
