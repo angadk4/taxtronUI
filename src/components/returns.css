@@ -139,16 +139,17 @@
 }
 
 .date-range-display {
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid #c3e6cb;
-    border-radius: 5px;
-    font-size: 16px;
     color: #155724;
-    text-align: center;
     display: flex;
     flex-direction: column;
+    margin-top: 10px;
+    padding: 10px;
+    border: 5px solid #000000;
+    border-radius: 200px;
+    font-size: 16px;
+    text-align: center;
     gap: 5px;
+    background-color: #ebebeb;
 }
 
 .table-container {
