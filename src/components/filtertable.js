@@ -3,6 +3,7 @@ import ReactPaginate from 'react-paginate';
 import './filtertable.css';
 import clientsData from './clientdata.json';
 import { parseISO, format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const formatDate = (dateStr) => {
   const parsedDate = dateStr.includes('T') ? parseISO(dateStr) : parseCustomDate(dateStr);
@@ -42,6 +43,7 @@ const YearSelector = ({ selectedYear, onChange }) => {
 };
 
 const FilterTable = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('T1');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [searchQuery, setSearchQuery] = useState('');
@@ -178,6 +180,10 @@ const FilterTable = () => {
       key,
       direction: prevState.key === key && prevState.direction === 'asc' ? 'desc' : 'asc',
     }));
+  };
+
+  const handleClientClick = (clientId) => {
+    navigate(`/returns/${clientId}`);
   };
 
   const columns = activeTab === 'T1' || activeTab === 'T3'
@@ -395,7 +401,7 @@ const FilterTable = () => {
             </thead>
             <tbody>
               {paginatedClients.map((client, index) => (
-                <tr key={index}>
+                <tr key={index} onClick={() => handleClientClick(client.clientId)}>
                   {columns.map((column) => (
                     <td key={column.key}>
                       {column.key === 'Firstnames'

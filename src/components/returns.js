@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactPaginate from 'react-paginate';
 import DatePicker from 'react-datepicker';
+import { useParams } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
 import './returns.css';
 
 const Returns = () => {
+  const { clientId } = useParams();
+  const [clientData, setClientData] = useState(null);
+  const [returnsData, setReturnsData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -21,6 +25,17 @@ const Returns = () => {
     payrollSlipsDue: false,
   });
   const itemsPerPage = 15;
+
+  useEffect(() => {
+    // Fetch client data based on clientId
+    fetch(`./returndata/${clientId}.json`)
+      .then(response => response.json())
+      .then(data => {
+        setClientData(data);
+        setReturnsData(data.returns);
+      })
+      .catch(error => console.error('Error fetching client data:', error));
+  }, [clientId]);
 
   const columns = [
     { key: 'Tags', label: 'Tags' },
@@ -78,219 +93,235 @@ const Returns = () => {
 
   return (
     <div className="main-container">
-      <div className="client-info">
-        <p><strong>Client Name</strong> <span>John Doe</span></p>
-        <p><strong>Client ID</strong> <span>123456</span></p>
-        <p><strong>Phone Number</strong> <span>(123) 456-7890</span></p>
-        <p><strong>Email</strong> <span>johndoe@example.com</span></p>
-      </div>
-      
-      <div className="status-container">
-        <div className="status-item">All <span className="status-count">0</span></div>
-        <div className="status-item">Work in process <span className="status-count">0</span></div>
-        <div className="status-item">Review Pending <span className="status-count">0</span></div>
-        <div className="status-item">Accepted <span className="status-count">0</span></div>
-        <div className="status-item">Paper Filed <span className="status-count">0</span></div>
-      </div>
+      {clientData ? (
+        <>
+          <div className="client-info">
+            <p><strong>Client Name</strong> <span>{clientData.clientName}</span></p>
+            <p><strong>Client ID</strong> <span>{clientData.clientId}</span></p>
+            <p><strong>Phone Number</strong> <span>{clientData.phoneNumber}</span></p>
+            <p><strong>Email</strong> <span>{clientData.email}</span></p>
+          </div>
+          
+          <div className="status-container">
+            <div className="status-item">All <span className="status-count">0</span></div>
+            <div className="status-item">Work in process <span className="status-count">0</span></div>
+            <div className="status-item">Review Pending <span className="status-count">0</span></div>
+            <div className="status-item">Accepted <span className="status-count">0</span></div>
+            <div className="status-item">Paper Filed <span className="status-count">0</span></div>
+          </div>
 
-      <div className="main-content">
-        <div className="filter-container">
-          <div className="filter-category">
-            <h3>Date Range</h3>
-            <div className="date-picker-container">
-              <button className="date-button" onClick={() => setIsStartOpen(true)}>Select From Date</button>
-              {isStartOpen && (
-                <DatePicker
-                  selected={startDate}
-                  onChange={handleStartDateChange}
-                  onClickOutside={() => setIsStartOpen(false)}
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
-                  inline
-                  minDate={new Date(1990, 0, 1)}
-                  maxDate={new Date()}
-                  onCalendarOpen={() => {
-                    if (startDate) {
-                      setEndDate(startDate);
-                    }
+          <div className="main-content">
+            <div className="filter-container">
+              <div className="filter-category">
+                <h3>Date Range</h3>
+                <div className="date-picker-container">
+                  <button className="date-button" onClick={() => setIsStartOpen(true)}>Select From Date</button>
+                  {isStartOpen && (
+                    <DatePicker
+                      selected={startDate}
+                      onChange={handleStartDateChange}
+                      onClickOutside={() => setIsStartOpen(false)}
+                      showMonthDropdown
+                      showYearDropdown
+                      dropdownMode="select"
+                      inline
+                      minDate={new Date(1990, 0, 1)}
+                      maxDate={new Date()}
+                      onCalendarOpen={() => {
+                        if (startDate) {
+                          setEndDate(startDate);
+                        }
+                      }}
+                    />
+                  )}
+                </div>
+                <div className="date-picker-container">
+                  <button className="date-button" onClick={() => setIsEndOpen(true)}>Select To Date</button>
+                  {isEndOpen && (
+                    <DatePicker
+                      selected={endDate}
+                      onChange={handleEndDateChange}
+                      onClickOutside={() => setIsEndOpen(false)}
+                      showMonthDropdown
+                      showYearDropdown
+                      dropdownMode="select"
+                      inline
+                      minDate={startDate || new Date(1990, 0, 1)}
+                      maxDate={new Date()}
+                      openToDate={startDate}
+                    />
+                  )}
+                </div>
+                <p className="date-range-display">
+                  <span>From: {startDate ? startDate.toLocaleDateString() : 'Select a date'}</span>
+                  <span>To: {endDate ? endDate.toLocaleDateString() : 'Select a date'}</span>
+                </p>
+              </div>
+
+              <div className="filter-category">
+                <h3>By Location</h3>
+                <div className="filter-item">
+                  <label htmlFor="location-select">Location:</label>
+                  <select
+                    id="location-select"
+                    value={selectedLocation}
+                    onChange={handleLocationChange}
+                    className="custom-select"
+                  >
+                    <option value="">Select a location</option>
+                    <option value="HeadOffice">Main Office</option>
+                    <option value="SubOffice">Sub Office</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="filter-category">
+                <h3>Client Filters</h3>
+                <div className="filter-year-toggle">
+                  <button
+                    className={`year-button ${selectedYear === 'Cur Yr' ? 'active' : ''}`}
+                    onClick={() => handleYearChange('Cur Yr')}
+                  >
+                    Current Year
+                  </button>
+                  <button
+                    className={`year-button ${selectedYear === 'Prev Yr' ? 'active' : ''}`}
+                    onClick={() => handleYearChange('Prev Yr')}
+                  >
+                    Previous Year
+                  </button>
+                </div>
+                <div className="filter-item">
+                  <label htmlFor="selfEmployed">Self Employed</label>
+                  <input
+                    type="checkbox"
+                    id="selfEmployed"
+                    name="selfEmployed"
+                    checked={checkBoxState.selfEmployed}
+                    onChange={handleCheckboxChange}
+                  />
+                </div>
+                <div className="filter-item">
+                  <label htmlFor="foreignTaxFilingRequired">Foreign Tax Filing Required</label>
+                  <input
+                    type="checkbox"
+                    id="foreignTaxFilingRequired"
+                    name="foreignTaxFilingRequired"
+                    checked={checkBoxState.foreignTaxFilingRequired}
+                    onChange={handleCheckboxChange}
+                  />
+                </div>
+                <div className="filter-item">
+                  <label htmlFor="discountedReturn">Discounted Return</label>
+                  <input
+                    type="checkbox"
+                    id="discountedReturn"
+                    name="discountedReturn"
+                    checked={checkBoxState.discountedReturn}
+                    onChange={handleCheckboxChange}
+                  />
+                </div>
+                <div className="filter-item">
+                  <label htmlFor="gstDue">GST Due</label>
+                  <input
+                    type="checkbox"
+                    id="gstDue"
+                    name="gstDue"
+                    checked={checkBoxState.gstDue}
+                    onChange={handleCheckboxChange}
+                  />
+                </div>
+                <div className="filter-item">
+                  <label htmlFor="expectedRefund">Expected Refund</label>
+                  <input
+                    type="checkbox"
+                    id="expectedRefund"
+                    name="expectedRefund"
+                    checked={checkBoxState.expectedRefund}
+                    onChange={handleCheckboxChange}
+                  />
+                </div>
+                <div className="filter-item">
+                  <label htmlFor="payrollSlipsDue">Payroll Slips Due</label>
+                  <input
+                    type="checkbox"
+                    id="payrollSlipsDue"
+                    name="payrollSlipsDue"
+                    checked={checkBoxState.payrollSlipsDue}
+                    onChange={handleCheckboxChange}
+                  />
+                </div>
+              </div>
+
+              <div className="buttons">
+                <button onClick={handleReset} className="reset-button">Reset</button>
+                <button className="apply-button" onClick={applyFilters}>Apply</button>
+              </div>
+            </div>
+
+            <div className="table-container">
+              <div className="search-bar">
+                <input
+                  type="text"
+                  placeholder="Search Fields..."
+                  onChange={(e) => {
+                    // Add search functionality here
                   }}
                 />
-              )}
-            </div>
-            <div className="date-picker-container">
-              <button className="date-button" onClick={() => setIsEndOpen(true)}>Select To Date</button>
-              {isEndOpen && (
-                <DatePicker
-                  selected={endDate}
-                  onChange={handleEndDateChange}
-                  onClickOutside={() => setIsEndOpen(false)}
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
-                  inline
-                  minDate={startDate || new Date(1990, 0, 1)}
-                  maxDate={new Date()}
-                  openToDate={startDate}
+              </div>
+              <div className="tabcontent active">
+                <table className="custom-table">
+                  <thead>
+                    <tr>
+                      {columns.map((column) => (
+                        <th key={column.key}>
+                          {column.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {returnsData.map((returnItem, index) => (
+                      <tr key={index}>
+                        {columns.map((column) => (
+                          <td key={column.key}>
+                            {column.key === 'LastUpdated'
+                              ? new Date(returnItem[column.key]).toLocaleDateString()
+                              : returnItem[column.key]}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <ReactPaginate
+                  previousLabel={'‹'}
+                  nextLabel={'›'}
+                  breakLabel={'...'}
+                  pageCount={Math.ceil(returnsData.length / itemsPerPage)}
+                  marginPagesDisplayed={1}
+                  pageRangeDisplayed={5}
+                  onPageChange={({ selected }) => setCurrentPage(selected)}
+                  containerClassName={'pagination'}
+                  activeClassName={'active'}
+                  disabledClassName={'disabled'}
+                  pageClassName={'page-item'}
+                  pageLinkClassName={'page-link'}
+                  previousClassName={'page-item'}
+                  previousLinkClassName={'page-link'}
+                  nextClassName={'page-item'}
+                  nextLinkClassName={'page-link'}
+                  breakClassName={'page-item'}
+                  breakLinkClassName={'page-link'}
+                  forcePage={currentPage}
                 />
-              )}
-            </div>
-            <p className="date-range-display">
-              <span>From: {startDate ? startDate.toLocaleDateString() : 'Select a date'}</span>
-              <span>To: {endDate ? endDate.toLocaleDateString() : 'Select a date'}</span>
-            </p>
-          </div>
-
-          <div className="filter-category">
-            <h3>By Location</h3>
-            <div className="filter-item">
-              <label htmlFor="location-select">Location:</label>
-              <select
-                id="location-select"
-                value={selectedLocation}
-                onChange={handleLocationChange}
-                className="custom-select"
-              >
-                <option value="">Select a location</option>
-                <option value="HeadOffice">Main Office</option>
-                <option value="SubOffice">Sub Office</option>
-              </select>
+              </div>
             </div>
           </div>
-
-          <div className="filter-category">
-            <h3>Client Filters</h3>
-            <div className="filter-year-toggle">
-              <button
-                className={`year-button ${selectedYear === 'Cur Yr' ? 'active' : ''}`}
-                onClick={() => handleYearChange('Cur Yr')}
-              >
-                Current Year
-              </button>
-              <button
-                className={`year-button ${selectedYear === 'Prev Yr' ? 'active' : ''}`}
-                onClick={() => handleYearChange('Prev Yr')}
-              >
-                Previous Year
-              </button>
-            </div>
-            <div className="filter-item">
-              <label htmlFor="selfEmployed">Self Employed</label>
-              <input
-                type="checkbox"
-                id="selfEmployed"
-                name="selfEmployed"
-                checked={checkBoxState.selfEmployed}
-                onChange={handleCheckboxChange}
-              />
-            </div>
-            <div className="filter-item">
-              <label htmlFor="foreignTaxFilingRequired">Foreign Tax Filing Required</label>
-              <input
-                type="checkbox"
-                id="foreignTaxFilingRequired"
-                name="foreignTaxFilingRequired"
-                checked={checkBoxState.foreignTaxFilingRequired}
-                onChange={handleCheckboxChange}
-              />
-            </div>
-            <div className="filter-item">
-              <label htmlFor="discountedReturn">Discounted Return</label>
-              <input
-                type="checkbox"
-                id="discountedReturn"
-                name="discountedReturn"
-                checked={checkBoxState.discountedReturn}
-                onChange={handleCheckboxChange}
-              />
-            </div>
-            <div className="filter-item">
-              <label htmlFor="gstDue">GST Due</label>
-              <input
-                type="checkbox"
-                id="gstDue"
-                name="gstDue"
-                checked={checkBoxState.gstDue}
-                onChange={handleCheckboxChange}
-              />
-            </div>
-            <div className="filter-item">
-              <label htmlFor="expectedRefund">Expected Refund</label>
-              <input
-                type="checkbox"
-                id="expectedRefund"
-                name="expectedRefund"
-                checked={checkBoxState.expectedRefund}
-                onChange={handleCheckboxChange}
-              />
-            </div>
-            <div className="filter-item">
-              <label htmlFor="payrollSlipsDue">Payroll Slips Due</label>
-              <input
-                type="checkbox"
-                id="payrollSlipsDue"
-                name="payrollSlipsDue"
-                checked={checkBoxState.payrollSlipsDue}
-                onChange={handleCheckboxChange}
-              />
-            </div>
-          </div>
-
-          <div className="buttons">
-            <button onClick={handleReset} className="reset-button">Reset</button>
-            <button className="apply-button" onClick={applyFilters}>Apply</button>
-          </div>
-        </div>
-
-        <div className="table-container">
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Search Fields..."
-              onChange={(e) => {
-                // Add search functionality here
-              }}
-            />
-          </div>
-          <div className="tabcontent active">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  {columns.map((column) => (
-                    <th key={column.key}>
-                      {column.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {/* Table rows will go here */}
-              </tbody>
-            </table>
-            <ReactPaginate
-              previousLabel={'‹'}
-              nextLabel={'›'}
-              breakLabel={'...'}
-              pageCount={1} // Set dynamically based on data length
-              marginPagesDisplayed={1}
-              pageRangeDisplayed={5}
-              onPageChange={({ selected }) => setCurrentPage(selected)}
-              containerClassName={'pagination'}
-              activeClassName={'active'}
-              disabledClassName={'disabled'}
-              pageClassName={'page-item'}
-              pageLinkClassName={'page-link'}
-              previousClassName={'page-item'}
-              previousLinkClassName={'page-link'}
-              nextClassName={'page-item'}
-              nextLinkClassName={'page-link'}
-              breakClassName={'page-item'}
-              breakLinkClassName={'page-link'}
-              forcePage={currentPage}
-            />
-          </div>
-        </div>
-      </div>
+        </>
+      ) : (
+        <p>Loading client data...</p>
+      )}
     </div>
   );
 };

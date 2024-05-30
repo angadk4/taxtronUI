@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import FilterTable from './components/filtertable';
 import Returns from './components/returns';
@@ -9,7 +9,7 @@ function NavigationButton() {
 
   return (
     <div className="top-section">
-      {location.pathname === '/returns' ? (
+      {location.pathname.includes('/returns') ? (
         <Link to="/">
           <button className="navigate-button">Back to Filter Table</button>
         </Link>
@@ -30,7 +30,7 @@ function App() {
         <div className="bottom-section">
           <Routes>
             <Route path="/" element={<FilterTable />} />
-            <Route path="/returns" element={<Returns />} />
+            <Route path="/returns/:clientId" element={<Returns />} />
           </Routes>
         </div>
       </div>
