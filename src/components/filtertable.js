@@ -2,9 +2,6 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactPaginate from 'react-paginate';
 import './filtertable.css';
 import clientsData from './clientdata.json';
-import ClientReturn1 from './returndata/2b3c9939-145d-47ad-bded-66d0e932501d.json';
-import ClientReturn2 from './returndata/30a5001f-8990-4441-a4fd-acd83d50c66d.json';
-import ClientReturn3 from './returndata/3e25ce73-faa5-4973-a2a3-9e34bc20afcb.json';
 import { parseISO, format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -186,24 +183,15 @@ const FilterTable = () => {
     }));
   };
 
-  const handleClientClick = (clientId) => {
-    let clientReturnsData = [];
-
-    if (clientId === "2b3c9939-145d-47ad-bded-66d0e932501d") {
-      clientReturnsData = ClientReturn1;
-    } else if (clientId === "30a5001f-8990-4441-a4fd-acd83d50c66d") {
-      clientReturnsData = ClientReturn2;
-    } else if (clientId === "3e25ce73-faa5-4973-a2a3-9e34bc20afcb") {
-      clientReturnsData = ClientReturn3;
-    }
-
-    if (clientReturnsData.length === 0) {
+  const handleClientClick = async (clientId) => {
+    try {
+      const response = await fetch(`./returndata/${clientId}.json`);
+      const clientReturnsData = await response.json();
+      navigate(`/returns/${clientId}`, { state: { clientReturnsData } });
+    } catch (error) {
       setError('Error fetching client return data.');
       setTimeout(() => setError(''), 3000);
-      return;
     }
-
-    navigate(`/returns/${clientId}`, { state: { clientReturnsData } });
   };
 
   const columns = activeTab === 'T1' || activeTab === 'T3'
