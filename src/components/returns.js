@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 import ReactPaginate from 'react-paginate';
 import DatePicker from 'react-datepicker';
-import { useParams } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
 import './returns.css';
 
 const Returns = () => {
   const { clientId } = useParams();
-  const [clientData, setClientData] = useState(null);
-  const [returnsData, setReturnsData] = useState([]);
+  const location = useLocation();
+  const [clientInfo, setClientInfo] = useState(null);
+  const [clientReturnsData, setClientReturnsData] = useState(location.state?.clientReturnsData || []);
   const [currentPage, setCurrentPage] = useState(0);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -29,22 +30,22 @@ const Returns = () => {
   useEffect(() => {
     const fetchClientData = async () => {
       try {
-        console.log(`Fetching data for client ID: ${clientId}`);
-        const response = await fetch(`./returndata/${clientId}.json`);
-        console.log(`Fetch response status: ${response.status}`);
-        if (!response.ok) {
-          throw new Error('Client data not found');
+        const clientInfoResponse = await fetch(`/src/components/clientdata.json`);
+        const clientInfoData = await clientInfoResponse.json();
+        const client = clientInfoData.find(client => client.ClientId === clientId);
+        setClientInfo(client);
+
+        if (!clientReturnsData.length) {
+          const clientReturnsResponse = await fetch(`/src/components/returndata/${clientId}.json`);
+          const clientReturnsData = await clientReturnsResponse.json();
+          setClientReturnsData(clientReturnsData);
         }
-        const data = await response.json();
-        console.log('Fetched data:', data);
-        setClientData(data);
-        setReturnsData(data.returns || data);
       } catch (error) {
         console.error('Error fetching client data:', error);
       }
     };
     fetchClientData();
-  }, [clientId]);
+  }, [clientId, clientReturnsData]);
 
   const columns = [
     { key: 'Tags', label: 'Tags' },
@@ -101,13 +102,13 @@ const Returns = () => {
 
   return (
     <div className="main-container">
-      {clientData ? (
+      {clientInfo ? (
         <>
           <div className="client-info">
-            <p><strong>Client Name</strong> <span>{clientData[0].Firstnames} {clientData[0].Surname}</span></p>
+            <p><strong>Client Name</strong> <span>{clientInfo.Firstnames} {clientInfo.Surname}</span></p>
             <p><strong>Client ID</strong> <span>{clientId}</span></p>
-            <p><strong>Phone Number</strong> <span>{clientData[0].PhoneNo}</span></p>
-            <p><strong>Email</strong> <span>{clientData[0].Email}</span></p>
+            <p><strong>Phone Number</strong> <span>{clientInfo.PhoneNo}</span></p>
+            <p><strong>Email</strong> <span>{clientInfo.Email}</span></p>
           </div>
           
           <div className="status-container">
@@ -287,9 +288,16 @@ const Returns = () => {
                         </th>
                       ))}
                     </tr>
+                    <tr>
+                      <td>Tags</td>
+                      <td>Name</td>
+                      <td>Spouse</td>
+                      <td>File Status</td>
+                      <td>Last Updated</td>
+                    </tr>
                   </thead>
                   <tbody>
-                    {returnsData.map((returnItem, index) => (
+                    {clientReturnsData.map((returnItem, index) => (
                       <tr key={index}>
                         {columns.map((column) => (
                           <td key={column.key}>
@@ -306,7 +314,7 @@ const Returns = () => {
                   previousLabel={'‹'}
                   nextLabel={'›'}
                   breakLabel={'...'}
-                  pageCount={Math.ceil(returnsData.length / itemsPerPage)}
+                  pageCount={Math.ceil(clientReturnsData.length / itemsPerPage)}
                   marginPagesDisplayed={1}
                   pageRangeDisplayed={5}
                   onPageChange={({ selected }) => setCurrentPage(selected)}

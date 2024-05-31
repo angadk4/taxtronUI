@@ -184,16 +184,13 @@ const FilterTable = () => {
   };
 
   const handleClientClick = async (clientId) => {
-    console.log(`Attempting to fetch data for client ID: ${clientId}`);
     try {
-      const response = await fetch(`./returndata/${clientId}.json`);
-      console.log(`Fetch response status: ${response.status}`);
-      if (response.ok) {
-        navigate(`/returns/${clientId}`);
-      } else {
-        setError('Client return data not found.');
-        setTimeout(() => setError(''), 3000);
+      const clientReturnsResponse = await fetch(`/src/components/returndata/${clientId}.json`);
+      if (!clientReturnsResponse.ok) {
+        throw new Error('Network response was not ok');
       }
+      const clientReturnsData = await clientReturnsResponse.json();
+      navigate(`/returns/${clientId}`, { state: { clientReturnsData } });
     } catch (error) {
       console.error('Error fetching client return data:', error);
       setError('Error fetching client return data.');
