@@ -4,6 +4,7 @@ import ReactPaginate from 'react-paginate';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './returns.css';
+import clientInfoData from './clientdata.json';
 
 const Returns = () => {
   const { clientId } = useParams();
@@ -28,17 +29,27 @@ const Returns = () => {
   const itemsPerPage = 15;
 
   useEffect(() => {
-    const fetchClientData = async () => {
-      try {
-        const clientInfoData = await (await fetch(`/src/components/clientdata.json`)).json();
-        const client = clientInfoData.find(client => client.ClientId === clientId);
-        setClientInfo(client);
-      } catch (error) {
-        console.error('Error fetching client data:', error);
+    const client = clientInfoData.find(client => client.ClientId === clientId);
+    setClientInfo(client);
+  }, [clientId]);
+
+  useEffect(() => {
+    const fetchClientReturnsData = async () => {
+      if (!location.state?.clientReturnsData) {
+        try {
+          const response = await fetch(`/src/components/returndata/${clientId}.json`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setClientReturnsData(data);
+        } catch (error) {
+          console.error('Error fetching client return data:', error);
+        }
       }
     };
-    fetchClientData();
-  }, [clientId]);
+    fetchClientReturnsData();
+  }, [clientId, location.state]);
 
   const columns = [
     { key: 'Tags', label: 'Tags' },

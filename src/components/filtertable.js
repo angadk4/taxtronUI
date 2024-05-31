@@ -185,14 +185,24 @@ const FilterTable = () => {
 
   const handleClientClick = async (clientId) => {
     try {
-      const response = await fetch(`./returndata/${clientId}.json`);
-      const clientReturnsData = await response.json();
+      const response = await fetch(`/returndata/${clientId}.json`);
+      const responseText = await response.text();
+      console.log('Response text:', responseText); // Log the response text
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const clientReturnsData = JSON.parse(responseText); // Parse the response text as JSON
       navigate(`/returns/${clientId}`, { state: { clientReturnsData } });
     } catch (error) {
       setError('Error fetching client return data.');
+      console.error('Fetch error:', error); // Log the error to the console for debugging
       setTimeout(() => setError(''), 3000);
     }
   };
+  
+   
+  
+  
 
   const columns = activeTab === 'T1' || activeTab === 'T3'
     ? [
