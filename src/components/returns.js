@@ -30,22 +30,15 @@ const Returns = () => {
   useEffect(() => {
     const fetchClientData = async () => {
       try {
-        const clientInfoResponse = await fetch(`/src/components/clientdata.json`);
-        const clientInfoData = await clientInfoResponse.json();
+        const clientInfoData = await (await fetch(`/src/components/clientdata.json`)).json();
         const client = clientInfoData.find(client => client.ClientId === clientId);
         setClientInfo(client);
-
-        if (!clientReturnsData.length) {
-          const clientReturnsResponse = await fetch(`/src/components/returndata/${clientId}.json`);
-          const clientReturnsData = await clientReturnsResponse.json();
-          setClientReturnsData(clientReturnsData);
-        }
       } catch (error) {
         console.error('Error fetching client data:', error);
       }
     };
     fetchClientData();
-  }, [clientId, clientReturnsData]);
+  }, [clientId]);
 
   const columns = [
     { key: 'Tags', label: 'Tags' },
@@ -269,69 +262,45 @@ const Returns = () => {
             </div>
 
             <div className="table-container">
-              <div className="search-bar">
-                <input
-                  type="text"
-                  placeholder="Search Fields..."
-                  onChange={(e) => {
-                    // Add search functionality here
-                  }}
-                />
-              </div>
-              <div className="tabcontent active">
-                <table className="custom-table">
-                  <thead>
-                    <tr>
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    {columns.map((column) => (
+                      <th key={column.key}>{column.label}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {clientReturnsData.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage).map((client, index) => (
+                    <tr key={index}>
                       {columns.map((column) => (
-                        <th key={column.key}>
-                          {column.label}
-                        </th>
+                        <td key={column.key}>{client[column.key]}</td>
                       ))}
                     </tr>
-                    <tr>
-                      <td>Tags</td>
-                      <td>Name</td>
-                      <td>Spouse</td>
-                      <td>File Status</td>
-                      <td>Last Updated</td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {clientReturnsData.map((returnItem, index) => (
-                      <tr key={index}>
-                        {columns.map((column) => (
-                          <td key={column.key}>
-                            {column.key === 'LastUpdated'
-                              ? new Date(returnItem[column.key]).toLocaleDateString()
-                              : returnItem[column.key]}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <ReactPaginate
-                  previousLabel={'‹'}
-                  nextLabel={'›'}
-                  breakLabel={'...'}
-                  pageCount={Math.ceil(clientReturnsData.length / itemsPerPage)}
-                  marginPagesDisplayed={1}
-                  pageRangeDisplayed={5}
-                  onPageChange={({ selected }) => setCurrentPage(selected)}
-                  containerClassName={'pagination'}
-                  activeClassName={'active'}
-                  disabledClassName={'disabled'}
-                  pageClassName={'page-item'}
-                  pageLinkClassName={'page-link'}
-                  previousClassName={'page-item'}
-                  previousLinkClassName={'page-link'}
-                  nextClassName={'page-item'}
-                  nextLinkClassName={'page-link'}
-                  breakClassName={'page-item'}
-                  breakLinkClassName={'page-link'}
-                  forcePage={currentPage}
-                />
-              </div>
+                  ))}
+                </tbody>
+              </table>
+              <ReactPaginate
+                previousLabel={'‹'}
+                nextLabel={'›'}
+                breakLabel={'...'}
+                pageCount={Math.ceil(clientReturnsData.length / itemsPerPage)}
+                marginPagesDisplayed={1}
+                pageRangeDisplayed={5}
+                onPageChange={({ selected }) => setCurrentPage(selected)}
+                containerClassName={'pagination'}
+                activeClassName={'active'}
+                disabledClassName={'disabled'}
+                pageClassName={'page-item'}
+                pageLinkClassName={'page-link'}
+                previousClassName={'page-item'}
+                previousLinkClassName={'page-link'}
+                nextClassName={'page-item'}
+                nextLinkClassName={'page-link'}
+                breakClassName={'page-item'}
+                breakLinkClassName={'page-link'}
+                forcePage={currentPage}
+              />
             </div>
           </div>
         </>
