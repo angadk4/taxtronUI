@@ -11,7 +11,7 @@ function NavigationButton() {
     <div className="top-section">
       {location.pathname.includes('/returns') && (
         <Link to="/">
-          <button className="navigate-button">Back to Filter Table</button>
+          <button className="navigate-button">Back to Clients</button>
         </Link>
       )}
     </div>

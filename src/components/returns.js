@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import ReactPaginate from 'react-paginate';
 import DatePicker from 'react-datepicker';
@@ -6,25 +6,34 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './returns.css';
 import clientInfoData from './clientdata.json';
 
+const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
+
 const Returns = () => {
   const { clientId } = useParams();
   const location = useLocation();
   const [clientInfo, setClientInfo] = useState(null);
   const [clientReturnsData, setClientReturnsData] = useState(location.state?.clientReturnsData || []);
+  const [filteredReturns, setFilteredReturns] = useState(location.state?.clientReturnsData || []);
   const [currentPage, setCurrentPage] = useState(0);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [isStartOpen, setIsStartOpen] = useState(false);
   const [isEndOpen, setIsEndOpen] = useState(false);
-  const [selectedYear, setSelectedYear] = useState('Cur Yr');
   const [selectedLocation, setSelectedLocation] = useState('');
-  const [checkBoxState, setCheckBoxState] = useState({
-    selfEmployed: false,
-    foreignTaxFilingRequired: false,
-    discountedReturn: false,
-    gstDue: false,
-    expectedRefund: false,
-    payrollSlipsDue: false,
+  const [searchQuery, setSearchQuery] = useState('');
+  const [formState, setFormState] = useState({
+    startDate: null,
+    endDate: null,
+    selectedLocation: '',
+    checkBoxState: {
+      selfEmployed: false,
+      foreignTaxFilingRequired: false,
+      discountedReturn: false,
+      gstDue: false,
+      expectedRefund: false,
+      payrollSlipsDue: false,
+    },
+    searchQuery: '',
   });
   const itemsPerPage = 15;
 
@@ -43,6 +52,7 @@ const Returns = () => {
           }
           const data = await response.json();
           setClientReturnsData(data);
+          setFilteredReturns(data);
         } catch (error) {
           console.error('Error fetching client return data:', error);
         }
@@ -51,58 +61,127 @@ const Returns = () => {
     fetchClientReturnsData();
   }, [clientId, location.state]);
 
-  const columns = [
-    { key: 'Tags', label: 'Tags' },
-    { key: 'Firstnames', label: 'Name' },
-    { key: 'Spouse', label: 'Spouse' },
-    { key: 'FileStatus', label: 'File Status' },
-    { key: 'LastUpdated', label: 'Last Updated' },
-  ];
+  const applyFilters = useCallback(() => {
+    let filteredData = clientReturnsData;
 
-  const handleStartDateChange = (date) => {
-    setStartDate(date);
-    setIsStartOpen(false);
-  };
+    if (formState.startDate) {
+      filteredData = filteredData.filter(returnItem => new Date(returnItem.Timestamp) >= formState.startDate);
+    }
 
-  const handleEndDateChange = (date) => {
-    setEndDate(date);
-    setIsEndOpen(false);
-  };
+    if (formState.endDate) {
+      filteredData = filteredData.filter(returnItem => new Date(returnItem.Timestamp) <= formState.endDate);
+    }
+
+    if (formState.selectedLocation) {
+      filteredData = filteredData.filter(returnItem => returnItem.Province === formState.selectedLocation);
+    }
+
+    const checkBoxState = formState.checkBoxState || {};
+
+    if (checkBoxState.selfEmployed) {
+      filteredData = filteredData.filter(returnItem => returnItem.bSelfEmployed || returnItem.bSpSelfEmployed);
+    }
+
+    if (checkBoxState.foreignTaxFilingRequired) {
+      filteredData = filteredData.filter(returnItem => returnItem.bForeignTaxFilingRequired || returnItem.bSpForeignTaxFilingRequired);
+    }
+
+    if (checkBoxState.discountedReturn) {
+      filteredData = filteredData.filter(returnItem => returnItem.bDicountedRet || returnItem.bSpDicountedRet);
+    }
+
+    if (checkBoxState.gstDue) {
+      filteredData = filteredData.filter(returnItem => returnItem.bGSTDue || returnItem.bSpGSTDue);
+    }
+
+    if (checkBoxState.expectedRefund) {
+      filteredData = filteredData.filter(returnItem => returnItem.bExpectedRefund);
+    }
+
+    if (checkBoxState.payrollSlipsDue) {
+      filteredData = filteredData.filter(returnItem => returnItem.bPayRollSlipsDue || returnItem.bSpPayRollSlipsDue);
+    }
+
+    const queryParts = formState.searchQuery.toLowerCase().split(' ').filter(Boolean);
+    if (queryParts.length > 0) {
+      filteredData = filteredData.filter(returnItem => {
+        return queryParts.every(queryPart =>
+          Object.values(returnItem).some(value => normalizeString(String(value)).includes(queryPart))
+        );
+      });
+    }
+
+    setFilteredReturns(filteredData);
+  }, [clientReturnsData, formState]);
+
+  const sortedReturns = useMemo(() => {
+    const sorted = [...filteredReturns];
+    // Sort logic if needed, e.g., by date or any other field
+    return sorted;
+  }, [filteredReturns]);
+
+  const paginatedReturns = useMemo(() => {
+    const startIndex = currentPage * itemsPerPage;
+    return sortedReturns.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedReturns, currentPage]);
 
   const handleCheckboxChange = (event) => {
     const { name } = event.target;
-    setCheckBoxState((prevState) => ({
+    setFormState((prevState) => ({
       ...prevState,
-      [name]: !prevState[name],
+      checkBoxState: {
+        ...prevState.checkBoxState,
+        [name]: !prevState.checkBoxState[name],
+      }
     }));
   };
 
-  const handleYearChange = (year) => {
-    setSelectedYear(year);
-  };
-
   const handleLocationChange = (e) => {
-    setSelectedLocation(e.target.value);
+    setFormState((prevState) => ({
+      ...prevState,
+      selectedLocation: e.target.value
+    }));
   };
 
   const handleReset = () => {
-    setStartDate(null);
-    setEndDate(null);
-    setSelectedYear('Cur Yr');
-    setSelectedLocation('');
-    setCheckBoxState({
-      selfEmployed: false,
-      foreignTaxFilingRequired: false,
-      discountedReturn: false,
-      gstDue: false,
-      expectedRefund: false,
-      payrollSlipsDue: false,
+    setFormState({
+      startDate: null,
+      endDate: null,
+      selectedLocation: '',
+      checkBoxState: {
+        selfEmployed: false,
+        foreignTaxFilingRequired: false,
+        discountedReturn: false,
+        gstDue: false,
+        expectedRefund: false,
+        payrollSlipsDue: false,
+      },
+      searchQuery: '',
     });
+    setCurrentPage(0);
+    setFilteredReturns(clientReturnsData);
   };
 
-  const applyFilters = () => {
-    console.log('Applying filters...');
-  };
+  const columns = [
+    { key: 'Tags', label: 'Tags', className: 'tags' },
+    { key: 'Firstnames', label: 'Name', className: 'name' },
+    { key: 'spFirstnames', label: 'Spouse', className: 'spouse' },
+    { key: 'FileStatus', label: 'File Status', className: 'file-status' },
+    { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
+  ];
+
+  const renderCheckbox = (name, label) => (
+    <div className="filter-item">
+      <label htmlFor={name}>{label}</label>
+      <input
+        type="checkbox"
+        id={name}
+        name={name}
+        checked={formState.checkBoxState[name]}
+        onChange={handleCheckboxChange}
+      />
+    </div>
+  );
 
   return (
     <div className="main-container">
@@ -114,9 +193,9 @@ const Returns = () => {
             <p><strong>Phone Number</strong> <span>{clientInfo.PhoneNo}</span></p>
             <p><strong>Email</strong> <span>{clientInfo.Email}</span></p>
           </div>
-          
+
           <div className="status-container">
-            <div className="status-item">All <span className="status-count">0</span></div>
+            <div className="status-item">All <span className="status-count">{clientReturnsData.length}</span></div>
             <div className="status-item">Work in process <span className="status-count">0</span></div>
             <div className="status-item">Review Pending <span className="status-count">0</span></div>
             <div className="status-item">Accepted <span className="status-count">0</span></div>
@@ -131,20 +210,13 @@ const Returns = () => {
                   <button className="date-button" onClick={() => setIsStartOpen(true)}>Select From Date</button>
                   {isStartOpen && (
                     <DatePicker
-                      selected={startDate}
-                      onChange={handleStartDateChange}
+                      selected={formState.startDate}
+                      onChange={date => setFormState((prevState) => ({ ...prevState, startDate: date }))}
                       onClickOutside={() => setIsStartOpen(false)}
                       showMonthDropdown
                       showYearDropdown
                       dropdownMode="select"
                       inline
-                      minDate={new Date(1990, 0, 1)}
-                      maxDate={new Date()}
-                      onCalendarOpen={() => {
-                        if (startDate) {
-                          setEndDate(startDate);
-                        }
-                      }}
                     />
                   )}
                 </div>
@@ -152,22 +224,19 @@ const Returns = () => {
                   <button className="date-button" onClick={() => setIsEndOpen(true)}>Select To Date</button>
                   {isEndOpen && (
                     <DatePicker
-                      selected={endDate}
-                      onChange={handleEndDateChange}
+                      selected={formState.endDate}
+                      onChange={date => setFormState((prevState) => ({ ...prevState, endDate: date }))}
                       onClickOutside={() => setIsEndOpen(false)}
                       showMonthDropdown
                       showYearDropdown
                       dropdownMode="select"
                       inline
-                      minDate={startDate || new Date(1990, 0, 1)}
-                      maxDate={new Date()}
-                      openToDate={startDate}
                     />
                   )}
                 </div>
                 <p className="date-range-display">
-                  <span>From: {startDate ? startDate.toLocaleDateString() : 'Select a date'}</span>
-                  <span>To: {endDate ? endDate.toLocaleDateString() : 'Select a date'}</span>
+                  <span>From: {formState.startDate ? formState.startDate.toLocaleDateString() : 'Select a date'}</span>
+                  <span>To: {formState.endDate ? formState.endDate.toLocaleDateString() : 'Select a date'}</span>
                 </p>
               </div>
 
@@ -177,93 +246,26 @@ const Returns = () => {
                   <label htmlFor="location-select">Location:</label>
                   <select
                     id="location-select"
-                    value={selectedLocation}
+                    value={formState.selectedLocation}
                     onChange={handleLocationChange}
                     className="custom-select"
                   >
                     <option value="">Select a location</option>
-                    <option value="HeadOffice">Main Office</option>
-                    <option value="SubOffice">Sub Office</option>
+                    <option value="ON">Ontario</option>
+                    <option value="QC">Quebec</option>
+                    {/* Add more options as needed */}
                   </select>
                 </div>
               </div>
 
               <div className="filter-category">
                 <h3>Client Filters</h3>
-                <div className="filter-year-toggle">
-                  <button
-                    className={`year-button ${selectedYear === 'Cur Yr' ? 'active' : ''}`}
-                    onClick={() => handleYearChange('Cur Yr')}
-                  >
-                    Current Year
-                  </button>
-                  <button
-                    className={`year-button ${selectedYear === 'Prev Yr' ? 'active' : ''}`}
-                    onClick={() => handleYearChange('Prev Yr')}
-                  >
-                    Previous Year
-                  </button>
-                </div>
-                <div className="filter-item">
-                  <label htmlFor="selfEmployed">Self Employed</label>
-                  <input
-                    type="checkbox"
-                    id="selfEmployed"
-                    name="selfEmployed"
-                    checked={checkBoxState.selfEmployed}
-                    onChange={handleCheckboxChange}
-                  />
-                </div>
-                <div className="filter-item">
-                  <label htmlFor="foreignTaxFilingRequired">Foreign Tax Filing Required</label>
-                  <input
-                    type="checkbox"
-                    id="foreignTaxFilingRequired"
-                    name="foreignTaxFilingRequired"
-                    checked={checkBoxState.foreignTaxFilingRequired}
-                    onChange={handleCheckboxChange}
-                  />
-                </div>
-                <div className="filter-item">
-                  <label htmlFor="discountedReturn">Discounted Return</label>
-                  <input
-                    type="checkbox"
-                    id="discountedReturn"
-                    name="discountedReturn"
-                    checked={checkBoxState.discountedReturn}
-                    onChange={handleCheckboxChange}
-                  />
-                </div>
-                <div className="filter-item">
-                  <label htmlFor="gstDue">GST Due</label>
-                  <input
-                    type="checkbox"
-                    id="gstDue"
-                    name="gstDue"
-                    checked={checkBoxState.gstDue}
-                    onChange={handleCheckboxChange}
-                  />
-                </div>
-                <div className="filter-item">
-                  <label htmlFor="expectedRefund">Expected Refund</label>
-                  <input
-                    type="checkbox"
-                    id="expectedRefund"
-                    name="expectedRefund"
-                    checked={checkBoxState.expectedRefund}
-                    onChange={handleCheckboxChange}
-                  />
-                </div>
-                <div className="filter-item">
-                  <label htmlFor="payrollSlipsDue">Payroll Slips Due</label>
-                  <input
-                    type="checkbox"
-                    id="payrollSlipsDue"
-                    name="payrollSlipsDue"
-                    checked={checkBoxState.payrollSlipsDue}
-                    onChange={handleCheckboxChange}
-                  />
-                </div>
+                {renderCheckbox('selfEmployed', 'Self Employed')}
+                {renderCheckbox('foreignTaxFilingRequired', 'Foreign Tax Filing Required')}
+                {renderCheckbox('discountedReturn', 'Discounted Return')}
+                {renderCheckbox('gstDue', 'GST Due')}
+                {renderCheckbox('expectedRefund', 'Expected Refund')}
+                {renderCheckbox('payrollSlipsDue', 'Payroll Slips Due')}
               </div>
 
               <div className="buttons">
@@ -277,15 +279,19 @@ const Returns = () => {
                 <thead>
                   <tr>
                     {columns.map((column) => (
-                      <th key={column.key}>{column.label}</th>
+                      <th key={column.key} className={column.className}>{column.label}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {clientReturnsData.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage).map((client, index) => (
+                  {paginatedReturns.map((returnItem, index) => (
                     <tr key={index}>
                       {columns.map((column) => (
-                        <td key={column.key}>{client[column.key]}</td>
+                        <td key={column.key} className={column.className}>
+                          <div className="scrollable-content">
+                            {returnItem[column.key]}
+                          </div>
+                        </td>
                       ))}
                     </tr>
                   ))}
@@ -295,7 +301,7 @@ const Returns = () => {
                 previousLabel={'‹'}
                 nextLabel={'›'}
                 breakLabel={'...'}
-                pageCount={Math.ceil(clientReturnsData.length / itemsPerPage)}
+                pageCount={Math.ceil(filteredReturns.length / itemsPerPage)}
                 marginPagesDisplayed={1}
                 pageRangeDisplayed={5}
                 onPageChange={({ selected }) => setCurrentPage(selected)}

@@ -26,12 +26,31 @@
   padding: 10px;
 }
 
+.table-header {
+  display: flex;
+  justify-content: space-between; /* Ensure space between tab and button */
+  align-items: center; /* Align items horizontally */
+  width: 100%;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  padding: 0 10px;
+  position: relative;
+}
+
+.tab-wrapper {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+}
+
 .tab {
   display: flex;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   border-bottom: 5px solid rgb(199, 222, 200);
-  width: 320px;
+  max-width: 320px;
 }
 
 .tablinks {
@@ -400,4 +419,48 @@ input[type="checkbox"]:checked:after {
 
 .year-button:active:not(.active) {
   background-color: #4CAF50; /* Full green when pressing and inactive */
+}
+
+.custom-table th.name,
+.custom-table td.name {
+  width: 25%;
+}
+
+.custom-table th.sin,
+.custom-table td.sin {
+  width: 10%;
+}
+
+.custom-table th.phone,
+.custom-table td.phone {
+  width: 15%;
+}
+
+.custom-table th.email,
+.custom-table td.email {
+  width: 20%;
+}
+
+.custom-table th.last-updated,
+.custom-table td.last-updated {
+  width: 25%;
+}
+
+.export-button {
+  background-color: #868686;
+  color: white;
+  border: none;
+  padding: 10px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-left: auto;
+  margin-bottom: 7px;
+  margin-right: 5px;
+}
+
+.export-button:hover {
+  background-color: #666666;
+  transform: translateY(-2px);
 }

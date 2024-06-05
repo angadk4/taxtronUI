@@ -4,6 +4,7 @@ import './filtertable.css';
 import clientsData from './clientdata.json';
 import { parseISO, format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import Papa from 'papaparse';
 
 const formatDate = (dateStr) => {
   const parsedDate = dateStr.includes('T') ? parseISO(dateStr) : parseCustomDate(dateStr);
@@ -199,24 +200,42 @@ const FilterTable = () => {
       setTimeout(() => setError(''), 3000);
     }
   };
-  
-   
-  
-  
+
+  const exportToCSV = () => {
+    const csvData = sortedClients.map(client => {
+      const { ClientId, Firstnames, Surname, SIN, PhoneNo, Email, LastUpdated, ...rest } = client;
+      const csvRow = {
+        Name: `${Firstnames} ${Surname}`,
+        SIN,
+        Phone: PhoneNo,
+        Email,
+        'Last Updated': formatDate(LastUpdated),
+      };
+      return csvRow;
+    });
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'filtered_clients.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const columns = activeTab === 'T1' || activeTab === 'T3'
     ? [
-        { key: 'Firstnames', label: 'Name' },
-        { key: 'SIN', label: 'SIN' },
-        { key: 'PhoneNo', label: 'Phone' },
-        { key: 'Email', label: 'Email' },
-        { key: 'LastUpdated', label: 'Last Updated' },
+        { key: 'Firstnames', label: 'Name', className: 'name' },
+        { key: 'SIN', label: 'SIN', className: 'sin' },
+        { key: 'PhoneNo', label: 'Phone', className: 'phone' },
+        { key: 'Email', label: 'Email', className: 'email' },
+        { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
       ]
     : [
-        { key: 'CompanyName', label: 'Company Name' },
-        { key: 'BNFull', label: 'Business Number' },
-        { key: 'FYEnd', label: 'Year End' },
-        { key: 'LastUpdated', label: 'Last Updated' },
+        { key: 'CompanyName', label: 'Company Name', className: 'name' },
+        { key: 'BNFull', label: 'Business Number', className: 'sin' },
+        { key: 'FYEnd', label: 'Year End', className: 'phone' },
+        { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
       ];
 
   useEffect(() => {
@@ -390,10 +409,15 @@ const FilterTable = () => {
       </div>
 
       <div className="table-container">
-        <div className="tab">
-          <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => handleTabChange('T1')}>T1</button>
-          <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => handleTabChange('T2')}>T2</button>
-          <button className={`tablinks ${activeTab === 'T3' ? 'active' : ''}`} onClick={() => handleTabChange('T3')}>T3</button>
+        <div className="table-header">
+          <div className="tab-wrapper">
+            <div className="tab">
+              <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => handleTabChange('T1')}>T1</button>
+              <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => handleTabChange('T2')}>T2</button>
+              <button className={`tablinks ${activeTab === 'T3' ? 'active' : ''}`} onClick={() => handleTabChange('T3')}>T3</button>
+            </div>
+          </div>
+          <button className="export-button" onClick={exportToCSV}>Export to CSV</button>
         </div>
         <div className="search-bar">
           <input
@@ -412,7 +436,7 @@ const FilterTable = () => {
             <thead>
               <tr>
                 {columns.map((column) => (
-                  <th key={column.key} onClick={() => requestSort(column.key)}>
+                  <th key={column.key} className={column.className} onClick={() => requestSort(column.key)}>
                     {column.label} {sortConfig.key === column.key ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
                   </th>
                 ))}
@@ -422,7 +446,7 @@ const FilterTable = () => {
               {paginatedClients.map((client, index) => (
                 <tr key={index} onClick={() => handleClientClick(client.ClientId)}>
                   {columns.map((column) => (
-                    <td key={column.key}>
+                    <td key={column.key} className={column.className}>
                       {column.key === 'Firstnames'
                         ? `${client.Firstnames} ${client.Surname}`
                         : column.key === 'LastUpdated'
