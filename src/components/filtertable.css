@@ -446,6 +446,16 @@ input[type="checkbox"]:checked:after {
   width: 25%;
 }
 
+.custom-table th.estate-name,
+.custom-table td.estate-name {
+  width: 20%;
+}
+
+.custom-table th.trust-number,
+.custom-table td.trust-number {
+  width: 40%;
+}
+
 .export-button {
   background-color: #868686;
   color: white;

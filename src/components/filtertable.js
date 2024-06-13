@@ -22,7 +22,7 @@ const parseCustomDate = (dateStr) => {
   return new Date(year, month - 1, day, hours, minutes, seconds);
 };
 
-const normalizeString = (str) => str.toLowerCase().replace(/\\s+/g, ' ').trim();
+const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
 
 const YearSelector = ({ selectedYear, onChange }) => {
   return (
@@ -203,12 +203,15 @@ const FilterTable = () => {
 
   const exportToCSV = () => {
     const csvData = sortedClients.map(client => {
-      const { ClientId, Firstnames, Surname, SIN, PhoneNo, Email, LastUpdated, ...rest } = client;
-      const csvRow = {
-        Name: `${Firstnames} ${Surname}`,
-        SIN,
-        Phone: PhoneNo,
-        Email,
+      const { ClientId, EstateName, SNFull, LastUpdated, CompanyName, BNFull, FYEnd } = client;
+      const csvRow = activeTab === 'T2' ? {
+        'Company Name': CompanyName,
+        'Business Number': BNFull,
+        'Year End': FYEnd,
+        'Last Updated': formatDate(LastUpdated),
+      } : {
+        'Estate Name': EstateName,
+        'Trust Number': SNFull,
         'Last Updated': formatDate(LastUpdated),
       };
       return csvRow;
@@ -223,20 +226,37 @@ const FilterTable = () => {
     document.body.removeChild(link);
   };
 
-  const columns = activeTab === 'T1' || activeTab === 'T3'
-    ? [
+  const columns = useMemo(() => {
+    if (activeTab === 'T3') {
+      return [
+        { key: 'EstateName', label: 'Estate Name', className: 'estate-name' },
+        { key: 'SNFull', label: 'Trust Number', className: 'trust-number' },
+        { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
+      ];
+    } else if (activeTab === 'T1') {
+      return [
         { key: 'Firstnames', label: 'Name', className: 'name' },
         { key: 'SIN', label: 'SIN', className: 'sin' },
         { key: 'PhoneNo', label: 'Phone', className: 'phone' },
         { key: 'Email', label: 'Email', className: 'email' },
         { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
-      ]
-    : [
+      ];
+    } else if (activeTab === 'T2') {
+      return [
         { key: 'CompanyName', label: 'Company Name', className: 'name' },
         { key: 'BNFull', label: 'Business Number', className: 'sin' },
         { key: 'FYEnd', label: 'Year End', className: 'phone' },
         { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
       ];
+    } else {
+      return [
+        { key: 'CompanyName', label: 'Company Name', className: 'name' },
+        { key: 'BNFull', label: 'Business Number', className: 'sin' },
+        { key: 'FYEnd', label: 'Year End', className: 'phone' },
+        { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
+      ];
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const fadeIn = (selector) => {
