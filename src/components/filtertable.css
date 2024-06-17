@@ -421,9 +421,14 @@ input[type="checkbox"]:checked:after {
   background-color: #4CAF50; /* Full green when pressing and inactive */
 }
 
-.custom-table th.name,
-.custom-table td.name {
-  width: 25%;
+.custom-table th.first-name,
+.custom-table td.first-name {
+  width: 12%;
+}
+
+.custom-table th.surname,
+.custom-table td.surname {
+  width: 12%;
 }
 
 .custom-table th.sin,
@@ -433,17 +438,27 @@ input[type="checkbox"]:checked:after {
 
 .custom-table th.phone,
 .custom-table td.phone {
-  width: 15%;
+  width: 10%;
 }
 
 .custom-table th.email,
 .custom-table td.email {
+  width: 17.5%;
+}
+
+.custom-table th.company-name,
+.custom-table td.company-name {
+  width: 30%;
+}
+
+.custom-table th.business-number,
+.custom-table td.business-number {
   width: 20%;
 }
 
-.custom-table th.last-updated,
-.custom-table td.last-updated {
-  width: 25%;
+.custom-table th.year-end,
+.custom-table td.year-end {
+  width: 12%;
 }
 
 .custom-table th.estate-name,
@@ -453,7 +468,7 @@ input[type="checkbox"]:checked:after {
 
 .custom-table th.trust-number,
 .custom-table td.trust-number {
-  width: 40%;
+  width: 20%;
 }
 
 .export-button {

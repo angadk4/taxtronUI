@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactPaginate from 'react-paginate';
 import './filtertable.css';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, parse } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import APIController from './clientfetch';
@@ -10,8 +10,25 @@ const baseURL = '/clientsearch/getclientsdata/000779638e3141fcb06a56bdc5cc484e';
 
 const formatDate = (dateStr) => {
   if (!dateStr) return 'N/A'; // Handle undefined or null date strings
-  const parsedDate = parseISO(dateStr);
-  return format(parsedDate, 'yyyy/MM/dd HH:mm:ss');
+  let parsedDate;
+
+  // Try ISO format first
+  try {
+    parsedDate = parseISO(dateStr);
+    if (!isNaN(parsedDate)) return format(parsedDate, 'yyyy/MM/dd HH:mm:ss');
+  } catch (error) {
+    // continue to next format
+  }
+
+  // Try 'MM/dd/yyyy hh:mm:ss a' format
+  try {
+    parsedDate = parse(dateStr, 'MM/dd/yyyy hh:mm:ss a', new Date());
+    if (!isNaN(parsedDate)) return format(parsedDate, 'yyyy/MM/dd HH:mm:ss');
+  } catch (error) {
+    // continue to next format
+  }
+
+  return 'N/A';
 };
 
 const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -58,7 +75,7 @@ const FilterTable = () => {
   const [selectedYear, setSelectedYear] = useState('Cur Yr');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [error, setError] = useState('');
-  const itemsPerPage = 15;
+  const itemsPerPage = 25;
 
   const months = useMemo(() =>
     Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
@@ -112,7 +129,7 @@ const FilterTable = () => {
     const sorted = [...filteredClients];
     if (sortConfig.key) {
       sorted.sort((a, b) => {
-        if (sortConfig.key === 'LastUpdated') {
+        if (sortConfig.key === 'lastUpdated') {
           return (new Date(a[sortConfig.key]) - new Date(b[sortConfig.key])) * (sortConfig.direction === 'asc' ? 1 : -1);
         }
         return (a[sortConfig.key] || '').localeCompare(b[sortConfig.key] || '') * (sortConfig.direction === 'asc' ? 1 : -1);
@@ -150,16 +167,19 @@ const FilterTable = () => {
 
   const exportToCSV = () => {
     const csvData = sortedClients.map(client => {
-      const { ClientId, EstateName, SNFull, LastUpdated, CompanyName, BNFull, FYEnd } = client;
+      const { clientId, firstnames, surname, sin, phoneNo, email, lastUpdated, companyName, bnFull, fyEnd } = client;
       const csvRow = activeTab === 'T2' ? {
-        'Company Name': CompanyName,
-        'Business Number': BNFull,
-        'Year End': FYEnd,
-        'Last Updated': formatDate(LastUpdated),
+        'Company Name': companyName,
+        'Business Number': bnFull,
+        'Year End': fyEnd,
+        'Last Updated': formatDate(lastUpdated),
       } : {
-        'Estate Name': EstateName,
-        'Trust Number': SNFull,
-        'Last Updated': formatDate(LastUpdated),
+        'First Name': firstnames,
+        'Surname': surname,
+        'SIN': sin,
+        'Phone': phoneNo,
+        'Email': email,
+        'Last Updated': formatDate(lastUpdated),
       };
       return csvRow;
     });
@@ -176,31 +196,32 @@ const FilterTable = () => {
   const columns = useMemo(() => {
     if (activeTab === 'T3') {
       return [
-        { key: 'EstateName', label: 'Estate Name', className: 'estate-name' },
+        { key: 'estateName', label: 'Estate Name', className: 'estate-name' },
         { key: 'SNFull', label: 'Trust Number', className: 'trust-number' },
-        { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
+        { key: 'lastUpdated', label: 'Last Updated', className: 'last-updated' },
       ];
     } else if (activeTab === 'T1') {
       return [
-        { key: 'Firstnames', label: 'Name', className: 'name' },
-        { key: 'SIN', label: 'SIN', className: 'sin' },
-        { key: 'PhoneNo', label: 'Phone', className: 'phone' },
-        { key: 'Email', label: 'Email', className: 'email' },
-        { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
+        { key: 'firstnames', label: 'First Name', className: 'first-name' },
+        { key: 'surname', label: 'Surname', className: 'surname' },
+        { key: 'sin', label: 'SIN', className: 'sin' },
+        { key: 'phoneNo', label: 'Phone', className: 'phone' },
+        { key: 'email', label: 'Email', className: 'email' },
+        { key: 'lastUpdated', label: 'Last Updated', className: 'last-updated' },
       ];
     } else if (activeTab === 'T2') {
       return [
-        { key: 'CompanyName', label: 'Company Name', className: 'name' },
-        { key: 'BNFull', label: 'Business Number', className: 'sin' },
-        { key: 'FYEnd', label: 'Year End', className: 'phone' },
-        { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
+        { key: 'companyName', label: 'Company Name', className: 'company-name' },
+        { key: 'bnFull', label: 'Business Number', className: 'business-number' },
+        { key: 'fyEnd', label: 'Year End', className: 'year-end' },
+        { key: 'lastUpdated', label: 'Last Updated', className: 'last-updated' },
       ];
     } else {
       return [
-        { key: 'CompanyName', label: 'Company Name', className: 'name' },
-        { key: 'BNFull', label: 'Business Number', className: 'sin' },
-        { key: 'FYEnd', label: 'Year End', className: 'phone' },
-        { key: 'LastUpdated', label: 'Last Updated', className: 'last-updated' },
+        { key: 'companyName', label: 'Company Name', className: 'company-name' },
+        { key: 'bnFull', label: 'Business Number', className: 'business-number' },
+        { key: 'fyEnd', label: 'Year End', className: 'year-end' },
+        { key: 'lastUpdated', label: 'Last Updated', className: 'last-updated' },
       ];
     }
   }, [activeTab]);
@@ -412,14 +433,12 @@ const FilterTable = () => {
             </thead>
             <tbody>
               {paginatedClients.map((client, index) => (
-                <tr key={index} onClick={() => handleClientClick(client.ClientId)}>
+                <tr key={index} onClick={() => handleClientClick(client.clientId)}>
                   {columns.map((column) => (
                     <td key={column.key} className={column.className}>
-                      {column.key === 'Firstnames'
-                        ? `${client.Firstnames} ${client.Surname}`
-                        : column.key === 'LastUpdated'
+                      {column.key === 'lastUpdated'
                         ? formatDate(client[column.key])
-                        : client[column.key]}
+                        : client[column.key] || 'N/A'}
                     </td>
                   ))}
                 </tr>

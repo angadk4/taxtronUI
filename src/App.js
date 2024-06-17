@@ -32,15 +32,6 @@ function App() {
             <Route path="/returns/:clientId" element={<Returns />} />
           </Routes>
         </div>
-        <div className="data-section">
-          <APIController url="/clientsearch/getclientsdata/000779638e3141fcb06a56bdc5cc484e?Prod=T1" setData={setData} />
-          {data && (
-            <div className="fetched-data">
-              <h2>Fetched Data</h2>
-              <pre>{JSON.stringify(data, null, 2)}</pre>
-            </div>
-          )}
-        </div>
       </div>
     </Router>
   );
