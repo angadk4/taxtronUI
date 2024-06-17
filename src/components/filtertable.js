@@ -1,25 +1,17 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactPaginate from 'react-paginate';
 import './filtertable.css';
-import clientsData from './clientdata.json';
 import { parseISO, format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
+import APIController from './clientfetch';
+
+const baseURL = '/clientsearch/getclientsdata/000779638e3141fcb06a56bdc5cc484e';
 
 const formatDate = (dateStr) => {
-  const parsedDate = dateStr.includes('T') ? parseISO(dateStr) : parseCustomDate(dateStr);
+  if (!dateStr) return 'N/A'; // Handle undefined or null date strings
+  const parsedDate = parseISO(dateStr);
   return format(parsedDate, 'yyyy/MM/dd HH:mm:ss');
-};
-
-const parseCustomDate = (dateStr) => {
-  const [datePart, timePart, period] = dateStr.split(' ');
-  const [month, day, year] = datePart.split('/').map(Number);
-  let [hours, minutes, seconds] = timePart.split(':').map(Number);
-
-  if (period === 'PM' && hours !== 12) hours += 12;
-  if (period === 'AM' && hours === 12) hours = 0;
-
-  return new Date(year, month - 1, day, hours, minutes, seconds);
 };
 
 const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -48,6 +40,7 @@ const FilterTable = () => {
   const [activeTab, setActiveTab] = useState('T1');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedBirthMonth, setSelectedBirthMonth] = useState('');
   const [selectedBirthDate, setSelectedBirthDate] = useState('');
   const [appliedFilters, setAppliedFilters] = useState({});
@@ -71,93 +64,49 @@ const FilterTable = () => {
     Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
   , []);
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setCurrentPage(0);
-    handleReset();
-  };
+  const buildURL = useCallback(() => {
+    let url = `${baseURL}?Prod=${activeTab}`;
+    
+    if (debouncedSearchQuery) {
+      url += `&SearchText=${debouncedSearchQuery}`;
+    }
+
+    if (selectedLocation) {
+      url += `&Location=${selectedLocation}`;
+    }
+
+    const filters = [];
+    const prefix = selectedYear === 'Cur Yr' ? '' : 'Pre_';
+
+    if (checkBoxState.selfEmployed) filters.push(`${prefix}bSelfEmployed eq true`);
+    if (checkBoxState.foreignTaxFilingRequired) filters.push(`${prefix}bForeignTaxFilingRequired eq true`);
+    if (checkBoxState.discountedReturn) filters.push(`${prefix}bDicountedRet eq true`);
+    if (checkBoxState.gstDue) filters.push(`${prefix}bGSTDue eq true`);
+    if (checkBoxState.expectedRefund) filters.push(`${prefix}bExpectedRefund eq true`);
+    if (checkBoxState.payrollSlipsDue) filters.push(`${prefix}bPayRollSlipsDue eq true`);
+
+    if (filters.length > 0) {
+      url += `&FilterText=${filters.join(' and ')}`;
+    }
+
+    url += `&Size=${itemsPerPage}`;
+    if (currentPage > 0) {
+      url += `&Skip=${currentPage * itemsPerPage}`;
+    }
+
+    return url;
+  }, [activeTab, debouncedSearchQuery, selectedLocation, selectedYear, checkBoxState, currentPage]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => setDebouncedSearchQuery(searchQuery), 3000);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const applyFilters = () => {
-    const filters = {
-      selectedBirthMonth,
-      selectedBirthDate,
-      checkBoxState,
-      filterYear: selectedYear,
-      selectedLocation,
-    };
-    setAppliedFilters(filters);
     setCurrentPage(0);
-    loadClients(filters);
+    const url = buildURL();
+    setFilteredClients(url);
   };
-
-  const loadClients = useCallback((filters) => {
-    let filteredData = clientsData.filter(client => client.ProductCode === activeTab);
-
-    if (filters.selectedBirthMonth) {
-      filteredData = filteredData.filter(client => {
-        const dob = new Date(client.DOB);
-        return dob.toLocaleString('en-US', { month: 'long' }) === filters.selectedBirthMonth;
-      });
-    }
-
-    if (filters.selectedBirthDate) {
-      filteredData = filteredData.filter(client => {
-        const dob = new Date(client.DOB);
-        return dob.getDate() === parseInt(filters.selectedBirthDate, 10);
-      });
-    }
-
-    if (filters.selectedLocation) {
-      filteredData = filteredData.filter(client => client.Location === filters.selectedLocation);
-    }
-
-    const checkBoxState = filters.checkBoxState || {};
-    const prefix = filters.filterYear === 'Cur Yr' ? '' : 'Pre_';
-
-    if (checkBoxState.selfEmployed) {
-      filteredData = filteredData.filter(client => client[`${prefix}bSelfEmployed`] || client[`${prefix}bSpSelfEmployed`]);
-    }
-
-    if (checkBoxState.foreignTaxFilingRequired) {
-      filteredData = filteredData.filter(client => client[`${prefix}bForeignTaxFilingRequired`] || client[`${prefix}bSpForeignTaxFilingRequired`]);
-    }
-
-    if (checkBoxState.discountedReturn) {
-      filteredData = filteredData.filter(client => client[`${prefix}bDicountedRet`] || client[`${prefix}bSpDicountedRet`]);
-    }
-
-    if (checkBoxState.gstDue) {
-      filteredData = filteredData.filter(client => client[`${prefix}bGSTDue`] || client[`${prefix}bSpGSTDue`]);
-    }
-
-    if (checkBoxState.expectedRefund) {
-      filteredData = filteredData.filter(client => client[`${prefix}bExpectedRefund`]);
-    }
-
-    if (checkBoxState.payrollSlipsDue) {
-      filteredData = filteredData.filter(client => client[`${prefix}bPayRollSlipsDue`] || client[`${prefix}bSpPayRollSlipsDue`]);
-    }
-
-    const queryParts = searchQuery.toLowerCase().split(' ').filter(Boolean);
-    if (queryParts.length > 0) {
-      filteredData = filteredData.filter(client => {
-        return queryParts.every(queryPart =>
-          Object.values(client).some(value => normalizeString(String(value)).includes(queryPart))
-        );
-      });
-    }
-
-    setFilteredClients(filteredData);
-  }, [activeTab, searchQuery]);
-
-  useEffect(() => {
-    loadClients(appliedFilters);
-  }, [activeTab, appliedFilters, loadClients]);
-
-  useEffect(() => {
-    setCurrentPage(0);
-    loadClients(appliedFilters);
-  }, [searchQuery, appliedFilters, loadClients]);
 
   const sortedClients = useMemo(() => {
     const sorted = [...filteredClients];
@@ -188,15 +137,13 @@ const FilterTable = () => {
     try {
       const response = await fetch(`/returndata/${clientId}.json`);
       const responseText = await response.text();
-      console.log('Response text:', responseText); // Log the response text
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const clientReturnsData = JSON.parse(responseText); // Parse the response text as JSON
+      const clientReturnsData = JSON.parse(responseText);
       navigate(`/returns/${clientId}`, { state: { clientReturnsData } });
     } catch (error) {
       setError('Error fetching client return data.');
-      console.error('Fetch error:', error); // Log the error to the console for debugging
       setTimeout(() => setError(''), 3000);
     }
   };
@@ -432,9 +379,9 @@ const FilterTable = () => {
         <div className="table-header">
           <div className="tab-wrapper">
             <div className="tab">
-              <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => handleTabChange('T1')}>T1</button>
-              <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => handleTabChange('T2')}>T2</button>
-              <button className={`tablinks ${activeTab === 'T3' ? 'active' : ''}`} onClick={() => handleTabChange('T3')}>T3</button>
+              <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => setActiveTab('T1')}>T1</button>
+              <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => setActiveTab('T2')}>T2</button>
+              <button className={`tablinks ${activeTab === 'T3' ? 'active' : ''}`} onClick={() => setActiveTab('T3')}>T3</button>
             </div>
           </div>
           <button className="export-button" onClick={exportToCSV}>Export to CSV</button>
@@ -451,6 +398,7 @@ const FilterTable = () => {
           />
         </div>
         {error && <div className="error-popup">{error}</div>}
+        <APIController url={buildURL()} setData={setFilteredClients} />
         <div className="tabcontent active">
           <table className="custom-table">
             <thead>
