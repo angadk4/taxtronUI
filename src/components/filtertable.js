@@ -75,7 +75,7 @@ const FilterTable = () => {
   const [selectedYear, setSelectedYear] = useState('Cur Yr');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [error, setError] = useState('');
-  const itemsPerPage = 25;
+  const itemsPerPage = 15;
 
   const months = useMemo(() =>
     Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
@@ -95,12 +95,12 @@ const FilterTable = () => {
     const filters = [];
     const prefix = selectedYear === 'Cur Yr' ? '' : 'Pre_';
 
-    if (checkBoxState.selfEmployed) filters.push(`${prefix}bSelfEmployed eq true`);
-    if (checkBoxState.foreignTaxFilingRequired) filters.push(`${prefix}bForeignTaxFilingRequired eq true`);
-    if (checkBoxState.discountedReturn) filters.push(`${prefix}bDicountedRet eq true`);
-    if (checkBoxState.gstDue) filters.push(`${prefix}bGSTDue eq true`);
-    if (checkBoxState.expectedRefund) filters.push(`${prefix}bExpectedRefund eq true`);
-    if (checkBoxState.payrollSlipsDue) filters.push(`${prefix}bPayRollSlipsDue eq true`);
+    if (appliedFilters.selfEmployed) filters.push(`${prefix}bSelfEmployed eq true`);
+    if (appliedFilters.foreignTaxFilingRequired) filters.push(`${prefix}bForeignTaxFilingRequired eq true`);
+    if (appliedFilters.discountedReturn) filters.push(`${prefix}bDicountedRet eq true`);
+    if (appliedFilters.gstDue) filters.push(`${prefix}bGSTDue eq true`);
+    if (appliedFilters.expectedRefund) filters.push(`${prefix}bExpectedRefund eq true`);
+    if (appliedFilters.payrollSlipsDue) filters.push(`${prefix}bPayRollSlipsDue eq true`);
 
     if (filters.length > 0) {
       url += `&FilterText=${filters.join(' and ')}`;
@@ -112,7 +112,7 @@ const FilterTable = () => {
     }
 
     return url;
-  }, [activeTab, debouncedSearchQuery, selectedLocation, selectedYear, checkBoxState, currentPage]);
+  }, [activeTab, debouncedSearchQuery, selectedLocation, selectedYear, appliedFilters, currentPage]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => setDebouncedSearchQuery(searchQuery), 3000);
@@ -121,12 +121,12 @@ const FilterTable = () => {
 
   const applyFilters = () => {
     setCurrentPage(0);
-    const url = buildURL();
-    setFilteredClients(url);
+    setAppliedFilters(checkBoxState);
+    setFilteredClients(buildURL());
   };
 
   const sortedClients = useMemo(() => {
-    const sorted = [...filteredClients];
+    const sorted = Array.isArray(filteredClients) ? [...filteredClients] : [];
     if (sortConfig.key) {
       sorted.sort((a, b) => {
         if (sortConfig.key === 'lastUpdated') {
@@ -432,7 +432,7 @@ const FilterTable = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedClients.map((client, index) => (
+              {paginatedClients.length > 0 ? paginatedClients.map((client, index) => (
                 <tr key={index} onClick={() => handleClientClick(client.clientId)}>
                   {columns.map((column) => (
                     <td key={column.key} className={column.className}>
@@ -442,7 +442,11 @@ const FilterTable = () => {
                     </td>
                   ))}
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan={columns.length} className="no-results">No results found</td>
+                </tr>
+              )}
             </tbody>
           </table>
           <ReactPaginate
