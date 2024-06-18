@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactPaginate from 'react-paginate';
 import './filtertable.css';
 import { parseISO, format, parse } from 'date-fns';
@@ -77,11 +77,9 @@ const FilterTable = () => {
   const [error, setError] = useState('');
   const itemsPerPage = 15;
 
-  const months = useMemo(() =>
-    Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
-  , []);
+  const months = Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }));
 
-  const buildURL = useCallback(() => {
+  const buildURL = () => {
     let url = `${baseURL}?Prod=${activeTab}`;
     
     if (debouncedSearchQuery) {
@@ -112,20 +110,28 @@ const FilterTable = () => {
     }
 
     return url;
-  }, [activeTab, debouncedSearchQuery, selectedLocation, selectedYear, appliedFilters, currentPage]);
+  };
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => setDebouncedSearchQuery(searchQuery), 3000);
+    const timeoutId = setTimeout(() => setDebouncedSearchQuery(searchQuery), 750);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
   const applyFilters = () => {
     setCurrentPage(0);
     setAppliedFilters(checkBoxState);
-    setFilteredClients(buildURL());
+    setFilteredClients([]); // Clear current results to show loading state
+    fetchFilteredClients();
   };
 
-  const sortedClients = useMemo(() => {
+  const fetchFilteredClients = async () => {
+    const url = buildURL();
+    const response = await fetch(url);
+    const data = await response.json();
+    setFilteredClients(data);
+  };
+
+  const sortedClients = React.useMemo(() => {
     const sorted = Array.isArray(filteredClients) ? [...filteredClients] : [];
     if (sortConfig.key) {
       sorted.sort((a, b) => {
@@ -138,7 +144,7 @@ const FilterTable = () => {
     return sorted;
   }, [filteredClients, sortConfig]);
 
-  const paginatedClients = useMemo(() => {
+  const paginatedClients = React.useMemo(() => {
     const startIndex = currentPage * itemsPerPage;
     return sortedClients.slice(startIndex, startIndex + itemsPerPage);
   }, [sortedClients, currentPage]);
@@ -193,7 +199,7 @@ const FilterTable = () => {
     document.body.removeChild(link);
   };
 
-  const columns = useMemo(() => {
+  const columns = React.useMemo(() => {
     if (activeTab === 'T3') {
       return [
         { key: 'estateName', label: 'Estate Name', className: 'estate-name' },
