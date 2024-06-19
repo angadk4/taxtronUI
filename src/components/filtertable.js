@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactPaginate from 'react-paginate';
 import './filtertable.css';
 import { parseISO, format, parse } from 'date-fns';
@@ -9,25 +9,16 @@ import APIController from './clientfetch';
 const baseURL = '/clientsearch/getclientsdata/000779638e3141fcb06a56bdc5cc484e';
 
 const formatDate = (dateStr) => {
-  if (!dateStr) return 'N/A'; // Handle undefined or null date strings
+  if (!dateStr) return 'N/A';
   let parsedDate;
-
-  // Try ISO format first
   try {
     parsedDate = parseISO(dateStr);
     if (!isNaN(parsedDate)) return format(parsedDate, 'yyyy/MM/dd HH:mm:ss');
-  } catch (error) {
-    // continue to next format
-  }
-
-  // Try 'MM/dd/yyyy hh:mm:ss a' format
+  } catch (error) {}
   try {
     parsedDate = parse(dateStr, 'MM/dd/yyyy hh:mm:ss a', new Date());
     if (!isNaN(parsedDate)) return format(parsedDate, 'yyyy/MM/dd HH:mm:ss');
-  } catch (error) {
-    // continue to next format
-  }
-
+  } catch (error) {}
   return 'N/A';
 };
 
@@ -73,13 +64,16 @@ const FilterTable = () => {
   const [filteredClients, setFilteredClients] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedYear, setSelectedYear] = useState('Cur Yr');
+  const [appliedYear, setAppliedYear] = useState('Cur Yr');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [error, setError] = useState('');
   const itemsPerPage = 15;
 
-  const months = Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }));
+  const months = useMemo(() =>
+    Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
+  , []);
 
-  const buildURL = () => {
+  const buildURL = useCallback(() => {
     let url = `${baseURL}?Prod=${activeTab}`;
     
     if (debouncedSearchQuery) {
@@ -91,7 +85,7 @@ const FilterTable = () => {
     }
 
     const filters = [];
-    const prefix = selectedYear === 'Cur Yr' ? '' : 'Pre_';
+    const prefix = appliedYear === 'Cur Yr' ? '' : 'Pre_';
 
     if (appliedFilters.selfEmployed) filters.push(`${prefix}bSelfEmployed eq true`);
     if (appliedFilters.foreignTaxFilingRequired) filters.push(`${prefix}bForeignTaxFilingRequired eq true`);
@@ -110,28 +104,21 @@ const FilterTable = () => {
     }
 
     return url;
-  };
+  }, [activeTab, debouncedSearchQuery, selectedLocation, appliedYear, appliedFilters, currentPage]);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => setDebouncedSearchQuery(searchQuery), 750);
+    const timeoutId = setTimeout(() => setDebouncedSearchQuery(searchQuery), 3000);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
   const applyFilters = () => {
     setCurrentPage(0);
     setAppliedFilters(checkBoxState);
-    setFilteredClients([]); // Clear current results to show loading state
-    fetchFilteredClients();
+    setAppliedYear(selectedYear);
+    setFilteredClients(buildURL());
   };
 
-  const fetchFilteredClients = async () => {
-    const url = buildURL();
-    const response = await fetch(url);
-    const data = await response.json();
-    setFilteredClients(data);
-  };
-
-  const sortedClients = React.useMemo(() => {
+  const sortedClients = useMemo(() => {
     const sorted = Array.isArray(filteredClients) ? [...filteredClients] : [];
     if (sortConfig.key) {
       sorted.sort((a, b) => {
@@ -144,7 +131,7 @@ const FilterTable = () => {
     return sorted;
   }, [filteredClients, sortConfig]);
 
-  const paginatedClients = React.useMemo(() => {
+  const paginatedClients = useMemo(() => {
     const startIndex = currentPage * itemsPerPage;
     return sortedClients.slice(startIndex, startIndex + itemsPerPage);
   }, [sortedClients, currentPage]);
@@ -199,7 +186,7 @@ const FilterTable = () => {
     document.body.removeChild(link);
   };
 
-  const columns = React.useMemo(() => {
+  const columns = useMemo(() => {
     if (activeTab === 'T3') {
       return [
         { key: 'estateName', label: 'Estate Name', className: 'estate-name' },
@@ -277,6 +264,7 @@ const FilterTable = () => {
       payrollSlipsDue: false,
     });
     setAppliedFilters({});
+    setAppliedYear('Cur Yr');
     setCurrentPage(0);
     setFilteredClients([]);
     setSelectedYear('Cur Yr');
