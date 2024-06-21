@@ -324,6 +324,14 @@ const FilterTable = () => {
   return (
     <div className="main-content">
       <div className="filter-container">
+        <div className="tab-wrapper">
+          <div className="tab">
+            <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => setActiveTab('T1')}>T1</button>
+            <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => setActiveTab('T2')}>T2</button>
+            <button className={`tablinks ${activeTab === 'T3' ? 'active' : ''}`} onClick={() => setActiveTab('T3')}>T3</button>
+          </div>
+        </div>
+
         <div className="filter-category">
           <h3>By Location</h3>
           <div className="filter-item">
@@ -392,25 +400,18 @@ const FilterTable = () => {
 
       <div className="table-container">
         <div className="table-header">
-          <div className="tab-wrapper">
-            <div className="tab">
-              <button className={`tablinks ${activeTab === 'T1' ? 'active' : ''}`} onClick={() => setActiveTab('T1')}>T1</button>
-              <button className={`tablinks ${activeTab === 'T2' ? 'active' : ''}`} onClick={() => setActiveTab('T2')}>T2</button>
-              <button className={`tablinks ${activeTab === 'T3' ? 'active' : ''}`} onClick={() => setActiveTab('T3')}>T3</button>
-            </div>
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Search Fields..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(0);
+              }}
+            />
           </div>
           <button className="export-button" onClick={exportToCSV}>Export to CSV</button>
-        </div>
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search Fields..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(0);
-            }}
-          />
         </div>
         {error && <div className="error-popup">{error}</div>}
         <APIController url={buildURL()} setData={setFilteredClients} />

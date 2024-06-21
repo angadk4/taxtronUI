@@ -28,19 +28,22 @@
 
 .table-header {
   display: flex;
-  justify-content: space-between; /* Ensure space between tab and button */
+  justify-content: space-around; /* Ensure space between tab and button */
   align-items: center; /* Align items horizontally */
   width: 100%;
   margin-bottom: 5px;
   margin-top: 5px;
   padding: 0 10px;
   position: relative;
+  margin-right: 30px;
+  margin-left: 30px;
+}
+
+.search-bar {
+  width: 80%;
 }
 
 .tab-wrapper {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   justify-content: center;
 }
@@ -50,12 +53,11 @@
   justify-content: center;
   margin-bottom: 5px;
   border-bottom: 5px solid rgb(199, 222, 200);
-  max-width: 320px;
 }
 
 .tablinks {
-  background-color: #f1f1f1;
-  width: 100px;
+  background-color: #d1d1d1;
+  width: 80px;
   border: none;
   outline: none;
   cursor: pointer;
@@ -480,9 +482,10 @@ input[type="checkbox"]:checked:after {
   font-size: 16px;
   border-radius: 5px;
   transition: background-color 0.3s, transform 0.2s;
-  margin-left: auto;
-  margin-bottom: 7px;
-  margin-right: 5px;
+  margin-left: 10px;
+  margin-right: 30px;
+  width: 200px;
+  margin-bottom: 12px;
 }
 
 .export-button:hover {
