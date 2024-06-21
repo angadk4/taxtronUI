@@ -278,6 +278,18 @@ const FilterTable = () => {
     setSelectedLocation(e.target.value);
   };
 
+  const removeFilter = (filterName) => {
+    setCheckBoxState((prevState) => ({
+      ...prevState,
+      [filterName]: false,
+    }));
+    setAppliedFilters((prevState) => {
+      const newFilters = { ...prevState };
+      delete newFilters[filterName];
+      return newFilters;
+    });
+  };
+
   function renderCheckbox(name, label) {
     return (
       <div className="filter-item">
@@ -412,6 +424,15 @@ const FilterTable = () => {
             />
           </div>
           <button className="export-button" onClick={exportToCSV}>Export to CSV</button>
+        </div>
+        <div className="applied-filters">
+          {Object.keys(appliedFilters).map(filterName => (
+            appliedFilters[filterName] && (
+              <div key={filterName} className="filter-box">
+                {filterName} <button onClick={() => removeFilter(filterName)}>X</button>
+              </div>
+            )
+          ))}
         </div>
         {error && <div className="error-popup">{error}</div>}
         <APIController url={buildURL()} setData={setFilteredClients} />
