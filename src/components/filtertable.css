@@ -31,7 +31,7 @@
   justify-content: space-around; /* Ensure space between tab and button */
   align-items: center; /* Align items horizontally */
   width: 100%;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
   margin-top: 5px;
   padding: 0 10px;
   position: relative;
@@ -148,7 +148,7 @@
 }
 
 .search-bar {
-  margin-bottom: 15px;
+  margin-bottom: 8px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -497,7 +497,7 @@ input[type="checkbox"]:checked:after {
 .applied-filters {
   display: flex;
   flex-wrap: wrap;
-  margin: 10px 0;
+  margin: 0px 5px 10px 5px;
 }
 
 .filter-box {

@@ -43,6 +43,15 @@ const YearSelector = ({ selectedYear, onChange }) => {
   );
 };
 
+const filterDisplayNames = {
+  selfEmployed: 'Self Employed',
+  foreignTaxFilingRequired: 'Foreign Tax Filing Required',
+  discountedReturn: 'Discounted Return',
+  gstDue: 'GST Due',
+  expectedRefund: 'Expected Refund',
+  payrollSlipsDue: 'Payroll Slips Due',
+};
+
 const FilterTable = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('T1');
@@ -51,8 +60,25 @@ const FilterTable = () => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedBirthMonth, setSelectedBirthMonth] = useState('');
   const [selectedBirthDate, setSelectedBirthDate] = useState('');
-  const [appliedFilters, setAppliedFilters] = useState({});
+  const [appliedCurFilters, setAppliedCurFilters] = useState({});
+  const [appliedPrevFilters, setAppliedPrevFilters] = useState({});
   const [checkBoxState, setCheckBoxState] = useState({
+    selfEmployed: false,
+    foreignTaxFilingRequired: false,
+    discountedReturn: false,
+    gstDue: false,
+    expectedRefund: false,
+    payrollSlipsDue: false,
+  });
+  const [curCheckBoxState, setCurCheckBoxState] = useState({
+    selfEmployed: false,
+    foreignTaxFilingRequired: false,
+    discountedReturn: false,
+    gstDue: false,
+    expectedRefund: false,
+    payrollSlipsDue: false,
+  });
+  const [prevCheckBoxState, setPrevCheckBoxState] = useState({
     selfEmployed: false,
     foreignTaxFilingRequired: false,
     discountedReturn: false,
@@ -64,8 +90,8 @@ const FilterTable = () => {
   const [filteredClients, setFilteredClients] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedYear, setSelectedYear] = useState('Cur Yr');
-  const [appliedYear, setAppliedYear] = useState('Cur Yr');
   const [selectedLocation, setSelectedLocation] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const itemsPerPage = 15;
 
@@ -85,14 +111,26 @@ const FilterTable = () => {
     }
 
     const filters = [];
-    const prefix = appliedYear === 'Cur Yr' ? '' : 'Pre_';
 
-    if (appliedFilters.selfEmployed) filters.push(`${prefix}bSelfEmployed eq true`);
-    if (appliedFilters.foreignTaxFilingRequired) filters.push(`${prefix}bForeignTaxFilingRequired eq true`);
-    if (appliedFilters.discountedReturn) filters.push(`${prefix}bDicountedRet eq true`);
-    if (appliedFilters.gstDue) filters.push(`${prefix}bGSTDue eq true`);
-    if (appliedFilters.expectedRefund) filters.push(`${prefix}bExpectedRefund eq true`);
-    if (appliedFilters.payrollSlipsDue) filters.push(`${prefix}bPayRollSlipsDue eq true`);
+    if (Object.values(appliedCurFilters).some(v => v)) {
+      const curPrefix = 'b';
+      if (appliedCurFilters.selfEmployed) filters.push(`${curPrefix}SelfEmployed eq true`);
+      if (appliedCurFilters.foreignTaxFilingRequired) filters.push(`${curPrefix}ForeignTaxFilingRequired eq true`);
+      if (appliedCurFilters.discountedReturn) filters.push(`${curPrefix}DicountedRet eq true`);
+      if (appliedCurFilters.gstDue) filters.push(`${curPrefix}GSTDue eq true`);
+      if (appliedCurFilters.expectedRefund) filters.push(`${curPrefix}ExpectedRefund eq true`);
+      if (appliedCurFilters.payrollSlipsDue) filters.push(`${curPrefix}PayRollSlipsDue eq true`);
+    }
+
+    if (Object.values(appliedPrevFilters).some(v => v)) {
+      const prevPrefix = 'Pre_b';
+      if (appliedPrevFilters.selfEmployed) filters.push(`${prevPrefix}SelfEmployed eq true`);
+      if (appliedPrevFilters.foreignTaxFilingRequired) filters.push(`${prevPrefix}ForeignTaxFilingRequired eq true`);
+      if (appliedPrevFilters.discountedReturn) filters.push(`${prevPrefix}DicountedRet eq true`);
+      if (appliedPrevFilters.gstDue) filters.push(`${prevPrefix}GSTDue eq true`);
+      if (appliedPrevFilters.expectedRefund) filters.push(`${prevPrefix}ExpectedRefund eq true`);
+      if (appliedPrevFilters.payrollSlipsDue) filters.push(`${prevPrefix}PayRollSlipsDue eq true`);
+    }
 
     if (filters.length > 0) {
       url += `&FilterText=${filters.join(' and ')}`;
@@ -104,19 +142,25 @@ const FilterTable = () => {
     }
 
     return url;
-  }, [activeTab, debouncedSearchQuery, selectedLocation, appliedYear, appliedFilters, currentPage]);
+  }, [activeTab, debouncedSearchQuery, selectedLocation, appliedCurFilters, appliedPrevFilters, currentPage]);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => setDebouncedSearchQuery(searchQuery), 3000);
+    const timeoutId = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
   const applyFilters = () => {
     setCurrentPage(0);
-    setAppliedFilters(checkBoxState);
-    setAppliedYear(selectedYear);
-    setFilteredClients(buildURL());
+    setAppliedCurFilters(curCheckBoxState);
+    setAppliedPrevFilters(prevCheckBoxState);
+    setLoading(true);
+    setFilteredClients([]);
   };
+
+  useEffect(() => {
+    setLoading(true);
+    setFilteredClients([]);
+  }, [activeTab]);
 
   const sortedClients = useMemo(() => {
     const sorted = Array.isArray(filteredClients) ? [...filteredClients] : [];
@@ -233,10 +277,17 @@ const FilterTable = () => {
 
   const handleCheckboxChange = (event) => {
     const { name } = event.target;
-    setCheckBoxState(prevState => ({
-      ...prevState,
-      [name]: !prevState[name]
-    }));
+    if (selectedYear === 'Cur Yr') {
+      setCurCheckBoxState(prevState => ({
+        ...prevState,
+        [name]: !prevState[name]
+      }));
+    } else {
+      setPrevCheckBoxState(prevState => ({
+        ...prevState,
+        [name]: !prevState[name]
+      }));
+    }
   };
 
   const handleMonthChange = (e) => {
@@ -255,7 +306,7 @@ const FilterTable = () => {
     setSelectedBirthDate('');
     setSearchQuery('');
     setSelectedLocation('');
-    setCheckBoxState({
+    setCurCheckBoxState({
       selfEmployed: false,
       foreignTaxFilingRequired: false,
       discountedReturn: false,
@@ -263,14 +314,27 @@ const FilterTable = () => {
       expectedRefund: false,
       payrollSlipsDue: false,
     });
-    setAppliedFilters({});
-    setAppliedYear('Cur Yr');
+    setPrevCheckBoxState({
+      selfEmployed: false,
+      foreignTaxFilingRequired: false,
+      discountedReturn: false,
+      gstDue: false,
+      expectedRefund: false,
+      payrollSlipsDue: false,
+    });
+    setAppliedCurFilters({});
+    setAppliedPrevFilters({});
     setCurrentPage(0);
     setFilteredClients([]);
     setSelectedYear('Cur Yr');
   };
 
   const handleYearChange = (year) => {
+    if (year === 'Cur Yr') {
+      setCheckBoxState(curCheckBoxState);
+    } else {
+      setCheckBoxState(prevCheckBoxState);
+    }
     setSelectedYear(year);
   };
 
@@ -279,15 +343,27 @@ const FilterTable = () => {
   };
 
   const removeFilter = (filterName) => {
-    setCheckBoxState((prevState) => ({
-      ...prevState,
-      [filterName]: false,
-    }));
-    setAppliedFilters((prevState) => {
-      const newFilters = { ...prevState };
-      delete newFilters[filterName];
-      return newFilters;
-    });
+    if (selectedYear === 'Cur Yr') {
+      setCurCheckBoxState((prevState) => ({
+        ...prevState,
+        [filterName]: false,
+      }));
+      setAppliedCurFilters((prevState) => {
+        const newFilters = { ...prevState };
+        delete newFilters[filterName];
+        return newFilters;
+      });
+    } else {
+      setPrevCheckBoxState((prevState) => ({
+        ...prevState,
+        [filterName]: false,
+      }));
+      setAppliedPrevFilters((prevState) => {
+        const newFilters = { ...prevState };
+        delete newFilters[filterName];
+        return newFilters;
+      });
+    }
   };
 
   function renderCheckbox(name, label) {
@@ -298,7 +374,7 @@ const FilterTable = () => {
           type="checkbox"
           id={name}
           name={name}
-          checked={checkBoxState[name]}
+          checked={selectedYear === 'Cur Yr' ? curCheckBoxState[name] : prevCheckBoxState[name]}
           onChange={handleCheckboxChange}
         />
       </div>
@@ -425,70 +501,83 @@ const FilterTable = () => {
           </div>
           <button className="export-button" onClick={exportToCSV}>Export to CSV</button>
         </div>
-        {Object.keys(appliedFilters).length > 0 && (
+        {(Object.keys(appliedCurFilters).some(key => appliedCurFilters[key]) || Object.keys(appliedPrevFilters).some(key => appliedPrevFilters[key])) && (
           <div className="applied-filters">
-            {Object.keys(appliedFilters).map(filterName => (
-              appliedFilters[filterName] && (
+            {Object.keys(appliedCurFilters).map(filterName => (
+              appliedCurFilters[filterName] && (
                 <div key={filterName} className="filter-box">
-                  {filterName} <button onClick={() => removeFilter(filterName)}>X</button>
+                  {filterDisplayNames[filterName]} (C) 
+                  <button onClick={() => removeFilter(filterName)}>X</button>
+                </div>
+              )
+            ))}
+            {Object.keys(appliedPrevFilters).map(filterName => (
+              appliedPrevFilters[filterName] && (
+                <div key={filterName} className="filter-box">
+                  {filterDisplayNames[filterName]} (P) 
+                  <button onClick={() => removeFilter(filterName)}>X</button>
                 </div>
               )
             ))}
           </div>
         )}
         {error && <div className="error-popup">{error}</div>}
-        <APIController url={buildURL()} setData={setFilteredClients} />
-        <div className="tabcontent active">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                {columns.map((column) => (
-                  <th key={column.key} className={column.className} onClick={() => requestSort(column.key)}>
-                    {column.label} {sortConfig.key === column.key ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedClients.length > 0 ? paginatedClients.map((client, index) => (
-                <tr key={index} onClick={() => handleClientClick(client.clientId)}>
+        <APIController url={buildURL()} setData={setFilteredClients} setLoading={setLoading} setError={setError} />
+        {loading ? (
+          <div className="loading-spinner">Loading...</div>
+        ) : (
+          <div className="tabcontent active">
+            <table className="custom-table">
+              <thead>
+                <tr>
                   {columns.map((column) => (
-                    <td key={column.key} className={column.className}>
-                      {column.key === 'lastUpdated'
-                        ? formatDate(client[column.key])
-                        : client[column.key] || 'N/A'}
-                    </td>
+                    <th key={column.key} className={column.className} onClick={() => requestSort(column.key)}>
+                      {column.label} {sortConfig.key === column.key ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                    </th>
                   ))}
                 </tr>
-              )) : (
-                <tr>
-                  <td colSpan={columns.length} className="no-results">No results found</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <ReactPaginate
-            previousLabel={'‹'}
-            nextLabel={'›'}
-            breakLabel={'...'}
-            pageCount={Math.max(Math.ceil(sortedClients.length / itemsPerPage), 1)}
-            marginPagesDisplayed={1}
-            pageRangeDisplayed={5}
-            onPageChange={({ selected }) => setCurrentPage(selected)}
-            containerClassName={'pagination'}
-            activeClassName={'active'}
-            disabledClassName={'disabled'}
-            pageClassName={'page-item'}
-            pageLinkClassName={'page-link'}
-            previousClassName={'page-item'}
-            previousLinkClassName={'page-link'}
-            nextClassName={'page-item'}
-            nextLinkClassName={'page-link'}
-            breakClassName={'page-item'}
-            breakLinkClassName={'page-link'}
-            forcePage={Math.min(currentPage, Math.max(Math.ceil(sortedClients.length / itemsPerPage) - 1, 0))}
-          />
-        </div>
+              </thead>
+              <tbody>
+                {paginatedClients.length > 0 ? paginatedClients.map((client, index) => (
+                  <tr key={index} onClick={() => handleClientClick(client.clientId)}>
+                    {columns.map((column) => (
+                      <td key={column.key} className={column.className}>
+                        {column.key === 'lastUpdated'
+                          ? formatDate(client[column.key])
+                          : client[column.key] || 'N/A'}
+                      </td>
+                    ))}
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={columns.length} className="no-results">No results found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            <ReactPaginate
+              previousLabel={'‹'}
+              nextLabel={'›'}
+              breakLabel={'...'}
+              pageCount={Math.max(Math.ceil(sortedClients.length / itemsPerPage), 1)}
+              marginPagesDisplayed={1}
+              pageRangeDisplayed={5}
+              onPageChange={({ selected }) => setCurrentPage(selected)}
+              containerClassName={'pagination'}
+              activeClassName={'active'}
+              disabledClassName={'disabled'}
+              pageClassName={'page-item'}
+              pageLinkClassName={'page-link'}
+              previousClassName={'page-item'}
+              previousLinkClassName={'page-link'}
+              nextClassName={'page-item'}
+              nextLinkClassName={'page-link'}
+              breakClassName={'page-item'}
+              breakLinkClassName={'page-link'}
+              forcePage={Math.min(currentPage, Math.max(Math.ceil(sortedClients.length / itemsPerPage) - 1, 0))}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

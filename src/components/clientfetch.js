@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const APIController = ({ url, setData }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
+const APIController = ({ url, setData, setLoading, setError }) => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -14,7 +11,7 @@ const APIController = ({ url, setData }) => {
         setError(null);
       } catch (error) {
         setError(error.message);
-        setData(null);
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -23,10 +20,7 @@ const APIController = ({ url, setData }) => {
     if (url) {
       fetchData();
     }
-  }, [url, setData]);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  }, [url, setData, setLoading, setError]);
 
   return null;
 };
