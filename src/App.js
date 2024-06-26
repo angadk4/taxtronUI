@@ -4,6 +4,7 @@ import './App.css';
 import FilterTable from './components/filtertable';
 import Returns from './components/returns';
 import APIController from './components/clientfetch';
+import Header from './components/header';
 
 function NavigationButton() {
   const location = useLocation();
@@ -25,6 +26,7 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <Header />
         <NavigationButton />
         <div className="bottom-section">
           <Routes>

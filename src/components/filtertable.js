@@ -88,6 +88,7 @@ const FilterTable = () => {
   });
   const [currentPage, setCurrentPage] = useState(0);
   const [filteredClients, setFilteredClients] = useState([]);
+  const [originalClients, setOriginalClients] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedYear, setSelectedYear] = useState('Cur Yr');
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -325,7 +326,7 @@ const FilterTable = () => {
     setAppliedCurFilters({});
     setAppliedPrevFilters({});
     setCurrentPage(0);
-    setFilteredClients([]);
+    setFilteredClients(originalClients); // Reset to original clients
     setSelectedYear('Cur Yr');
   };
 
@@ -343,26 +344,29 @@ const FilterTable = () => {
   };
 
   const removeFilter = (filterName) => {
-    if (selectedYear === 'Cur Yr') {
-      setCurCheckBoxState((prevState) => ({
-        ...prevState,
-        [filterName]: false,
-      }));
-      setAppliedCurFilters((prevState) => {
-        const newFilters = { ...prevState };
-        delete newFilters[filterName];
-        return newFilters;
-      });
-    } else {
-      setPrevCheckBoxState((prevState) => ({
-        ...prevState,
-        [filterName]: false,
-      }));
-      setAppliedPrevFilters((prevState) => {
-        const newFilters = { ...prevState };
-        delete newFilters[filterName];
-        return newFilters;
-      });
+    const filterElement = document.getElementById(`filter-${filterName}`);
+    if (filterElement) {
+      filterElement.classList.add('removing');
+      setTimeout(() => {
+        setCurCheckBoxState((prevState) => ({
+          ...prevState,
+          [filterName]: false,
+        }));
+        setPrevCheckBoxState((prevState) => ({
+          ...prevState,
+          [filterName]: false,
+        }));
+        setAppliedCurFilters((prevState) => {
+          const newFilters = { ...prevState };
+          delete newFilters[filterName];
+          return newFilters;
+        });
+        setAppliedPrevFilters((prevState) => {
+          const newFilters = { ...prevState };
+          delete newFilters[filterName];
+          return newFilters;
+        });
+      }, 125);
     }
   };
 
@@ -505,7 +509,7 @@ const FilterTable = () => {
           <div className="applied-filters">
             {Object.keys(appliedCurFilters).map(filterName => (
               appliedCurFilters[filterName] && (
-                <div key={filterName} className="filter-box">
+                <div key={filterName} id={`filter-${filterName}`} className="filter-box">
                   {filterDisplayNames[filterName]} (C) 
                   <button onClick={() => removeFilter(filterName)}>X</button>
                 </div>
@@ -513,7 +517,7 @@ const FilterTable = () => {
             ))}
             {Object.keys(appliedPrevFilters).map(filterName => (
               appliedPrevFilters[filterName] && (
-                <div key={filterName} className="filter-box">
+                <div key={filterName} id={`filter-${filterName}`} className="filter-box">
                   {filterDisplayNames[filterName]} (P) 
                   <button onClick={() => removeFilter(filterName)}>X</button>
                 </div>
