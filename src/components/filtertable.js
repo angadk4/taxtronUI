@@ -94,7 +94,7 @@ const FilterTable = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const itemsPerPage = 15;
+  const itemsPerPage = 20;
 
   const months = useMemo(() =>
     Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
@@ -535,7 +535,11 @@ const FilterTable = () => {
               <thead>
                 <tr>
                   {columns.map((column) => (
-                    <th key={column.key} className={column.className} onClick={() => requestSort(column.key)}>
+                    <th
+                      key={column.key}
+                      className={`${column.className} sortable`}
+                      onClick={() => requestSort(column.key)}
+                    >
                       {column.label} {sortConfig.key === column.key ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
                     </th>
                   ))}
@@ -543,7 +547,11 @@ const FilterTable = () => {
               </thead>
               <tbody>
                 {paginatedClients.length > 0 ? paginatedClients.map((client, index) => (
-                  <tr key={index} onClick={() => handleClientClick(client.clientId)}>
+                  <tr
+                    key={index}
+                    onClick={() => handleClientClick(client.clientId)}
+                    className="highlighted"
+                  >
                     {columns.map((column) => (
                       <td key={column.key} className={column.className}>
                         {column.key === 'lastUpdated'
