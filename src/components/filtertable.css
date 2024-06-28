@@ -500,24 +500,28 @@ input[type="checkbox"]:checked:after {
 }
 
 .export-button {
-  background-color: #868686;
-  color: white;
-  border: none;
+  background-color: transparent;
+  color: #868686;
+  border: 3px solid #868686;
   padding: 10px 10px;
   cursor: pointer;
   font-size: 16px;
+  font-weight: bold;
   border-radius: 5px;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s, transform 0.2s, color 0.3s, border-color 0.3s;
   margin-left: 10px;
   margin-right: 30px;
   width: 200px;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
 }
 
 .export-button:hover {
   background-color: #666666;
-  transform: translateY(-2px);
+  color: #ffffff;
+  border-color: #666666;
+  transform:scale(1.03)
 }
+
 
 /* New styles for applied filters container and filter boxes with animations */
 .applied-filters {
