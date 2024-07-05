@@ -18,7 +18,7 @@
   height: 50px;
   margin-top: 5px;
   transition: transform 0.3s;
-  margin-right: 25px; /* Distance between logo and title */
+  margin-right: 25px;
 }
 
 .header-logo:hover {
@@ -31,7 +31,7 @@
   font-style: italic;
   color: #4b4b4b;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  margin-right: 50px; /* Distance between title and menu */
+  margin-right: 50px; 
 }
 
 .header-menu {
@@ -67,7 +67,7 @@
 
 .menu-link:hover {
   color: #4CAF50;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
 }
 
 .menu-link:hover::after {
@@ -77,7 +77,7 @@
 
 .menu-divider {
   width: 2px;
-  background-color: #c6cacd;
+  background-color: #b7bbbe;
   margin: 0 10px;
 }
 

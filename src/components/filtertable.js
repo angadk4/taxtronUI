@@ -205,8 +205,12 @@ const FilterTable = () => {
 
   const exportToCSV = () => {
     const csvData = sortedClients.map(client => {
-      const { clientId, firstnames, surname, sin, phoneNo, email, lastUpdated, companyName, bnFull, fyEnd } = client;
-      const csvRow = activeTab === 'T2' ? {
+      const { clientId, firstnames, surname, sin, phoneNo, email, lastUpdated, companyName, bnFull, fyEnd, estateName, SNFull } = client;
+      const csvRow = activeTab === 'T3' ? {
+        'Estate Name': estateName,
+        'Trust Number': SNFull,
+        'Last Updated': formatDate(lastUpdated),
+      } : activeTab === 'T2' ? {
         'Company Name': companyName,
         'Business Number': bnFull,
         'Year End': fyEnd,
