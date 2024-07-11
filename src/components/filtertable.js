@@ -6,7 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import APIController from './clientfetch';
 
-const baseURL = '/clientsearch/getclientsdata/000779638e3141fcb06a56bdc5cc484e';
+const baseURL = '/clientsearch/getclientsdata/';
+const userID = '000779638e3141fcb06a56bdc5cc484e';  // Static user ID for now
 
 const formatDate = (dateStr) => {
   if (!dateStr) return 'N/A';
@@ -22,7 +23,14 @@ const formatDate = (dateStr) => {
   return 'N/A';
 };
 
-const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
+const filterDisplayNames = {
+  selfEmployed: 'Self Employed',
+  foreignTaxFilingRequired: 'Foreign Tax Filing Required',
+  discountedReturn: 'Discounted Return',
+  gstDue: 'GST Due',
+  expectedRefund: 'Expected Refund',
+  payrollSlipsDue: 'Payroll Slips Due',
+};
 
 const YearSelector = ({ selectedYear, onChange }) => {
   return (
@@ -41,15 +49,6 @@ const YearSelector = ({ selectedYear, onChange }) => {
       </button>
     </div>
   );
-};
-
-const filterDisplayNames = {
-  selfEmployed: 'Self Employed',
-  foreignTaxFilingRequired: 'Foreign Tax Filing Required',
-  discountedReturn: 'Discounted Return',
-  gstDue: 'GST Due',
-  expectedRefund: 'Expected Refund',
-  payrollSlipsDue: 'Payroll Slips Due',
 };
 
 const FilterTable = () => {
@@ -100,15 +99,16 @@ const FilterTable = () => {
     Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en-US', { month: 'long' }))
   , []);
 
-  const buildURL = useCallback(() => {
-    let url = `${baseURL}?Prod=${activeTab}`;
+  const buildParams = useCallback(() => {
+    const params = new URLSearchParams();
     
+    params.append('Prod', activeTab);
     if (debouncedSearchQuery) {
-      url += `&SearchText=${debouncedSearchQuery}`;
+      params.append('SearchText', debouncedSearchQuery);
     }
 
     if (selectedLocation) {
-      url += `&Location=${selectedLocation}`;
+      params.append('Location', selectedLocation);
     }
 
     const filters = [];
@@ -134,15 +134,15 @@ const FilterTable = () => {
     }
 
     if (filters.length > 0) {
-      url += `&FilterText=${filters.join(' and ')}`;
+      params.append('FilterText', filters.join(' and '));
     }
 
-    url += `&Size=${itemsPerPage}`;
+    params.append('Size', itemsPerPage);
     if (currentPage > 0) {
-      url += `&Skip=${currentPage * itemsPerPage}`;
+      params.append('Skip', currentPage * itemsPerPage);
     }
 
-    return url;
+    return params.toString();
   }, [activeTab, debouncedSearchQuery, selectedLocation, appliedCurFilters, appliedPrevFilters, currentPage]);
 
   useEffect(() => {
@@ -530,7 +530,7 @@ const FilterTable = () => {
           </div>
         )}
         {error && <div className="error-popup">{error}</div>}
-        <APIController url={buildURL()} setData={setFilteredClients} setLoading={setLoading} setError={setError} />
+        <APIController url={`${baseURL}${userID}?${buildParams()}`} setData={setFilteredClients} setLoading={setLoading} setError={setError} />
         {loading ? (
           <div className="loading-spinner">Loading...</div>
         ) : (
