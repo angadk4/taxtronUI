@@ -189,18 +189,7 @@ const FilterTable = () => {
   };
 
   const handleClientClick = async (clientId) => {
-    try {
-      const response = await fetch(`/returndata/${clientId}.json`);
-      const responseText = await response.text();
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const clientReturnsData = JSON.parse(responseText);
-      navigate(`/returns/${clientId}`, { state: { clientReturnsData } });
-    } catch (error) {
-      setError('Error fetching client return data.');
-      setTimeout(() => setError(''), 3000);
-    }
+    navigate(`/returns/${clientId}`, { state: { clientInfo: filteredClients.find(client => client.clientId === clientId) } });
   };
 
   const exportToCSV = () => {

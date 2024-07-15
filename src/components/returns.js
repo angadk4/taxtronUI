@@ -3,8 +3,8 @@ import { useLocation, useParams } from 'react-router-dom';
 import ReactPaginate from 'react-paginate';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import APIController from './clientfetch';
 import './returns.css';
-import clientInfoData from './clientdata.json';
 
 const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
 
@@ -12,8 +12,8 @@ const Returns = () => {
   const { clientId } = useParams();
   const location = useLocation();
   const [clientInfo, setClientInfo] = useState(null);
-  const [clientReturnsData, setClientReturnsData] = useState(location.state?.clientReturnsData || []);
-  const [filteredReturns, setFilteredReturns] = useState(location.state?.clientReturnsData || []);
+  const [clientReturnsData, setClientReturnsData] = useState([]);
+  const [filteredReturns, setFilteredReturns] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -36,26 +36,23 @@ const Returns = () => {
     searchQuery: '',
   });
   const itemsPerPage = 15;
+  const userID = '000779638e3141fcb06a56bdc5cc484e'; // Static user ID for now
+  const baseURL = '/taxreturnsearch/getreturnsdata/';
+
+  const buildParams = () => {
+    const params = new URLSearchParams();
+    // Add any additional parameters required for the API call here
+    return params.toString();
+  };
 
   useEffect(() => {
-    const client = clientInfoData.find(client => client.ClientId === clientId);
-    setClientInfo(client);
-  }, [clientId]);
+    setClientInfo(location.state?.clientInfo || null);
+  }, [clientId, location.state]);
 
   useEffect(() => {
     const fetchClientReturnsData = async () => {
       if (!location.state?.clientReturnsData) {
-        try {
-          const response = await fetch(`/src/components/returndata/${clientId}.json`);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const data = await response.json();
-          setClientReturnsData(data);
-          setFilteredReturns(data);
-        } catch (error) {
-          console.error('Error fetching client return data:', error);
-        }
+        setClientReturnsData([]);
       }
     };
     fetchClientReturnsData();
@@ -185,6 +182,12 @@ const Returns = () => {
 
   return (
     <div className="main-container">
+      <APIController 
+        url={`${baseURL}${userID}/${clientId}?${buildParams()}`} 
+        setData={setClientReturnsData} 
+        setLoading={() => {}} 
+        setError={() => {}} 
+      />
       {clientInfo ? (
         <>
           <div className="client-info">
