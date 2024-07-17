@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
 
 const APIController = ({ url, params, setData, setLoading, setError }) => {
@@ -6,11 +6,13 @@ const APIController = ({ url, params, setData, setLoading, setError }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        console.log('Fetching URL:', url, 'with params:', params);
         const response = await axios({
           method: 'get',
           url: url,
           params: params,
         });
+        console.log('Fetched Data:', response.data);
         setData(response.data);
         setError(null);
       } catch (error) {

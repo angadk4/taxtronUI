@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import axios from 'axios';
 import ReactPaginate from 'react-paginate';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import APIController from './clientfetch';
 import './returns.css';
 
 const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -35,13 +35,15 @@ const Returns = () => {
     },
     searchQuery: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const itemsPerPage = 15;
-  const userID = '000779638e3141fcb06a56bdc5cc484e'; // Static user ID for now
+  const userID = '000779638e3141fcb06a56bdc5cc484e';
   const baseURL = '/taxreturnsearch/getreturnsdata/';
 
   const buildParams = () => {
     const params = new URLSearchParams();
-    // Add any additional parameters required for the API call here
+    // Add parameters as needed
     return params.toString();
   };
 
@@ -51,12 +53,31 @@ const Returns = () => {
 
   useEffect(() => {
     const fetchClientReturnsData = async () => {
-      if (!location.state?.clientReturnsData) {
+      try {
+        setLoading(true);
+        const url = `${baseURL}${userID}/${clientId}?${buildParams()}`;
+        console.log('Fetching URL:', url);
+        const response = await axios.get(url);
+        console.log('Fetched Data:', response.data);
+        if (response.data.Result === 0 && response.data.Status === "Success") {
+          setClientReturnsData([]);
+          setFilteredReturns([]);
+        } else {
+          setClientReturnsData(response.data);
+          setFilteredReturns(response.data);
+        }
+        setError('');
+      } catch (error) {
+        console.error('Error fetching client returns data:', error);
+        setError(error.message);
         setClientReturnsData([]);
+        setFilteredReturns([]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchClientReturnsData();
-  }, [clientId, location.state]);
+  }, [clientId]);
 
   const applyFilters = useCallback(() => {
     let filteredData = clientReturnsData;
@@ -111,6 +132,10 @@ const Returns = () => {
     setFilteredReturns(filteredData);
   }, [clientReturnsData, formState]);
 
+  useEffect(() => {
+    applyFilters();
+  }, [formState, applyFilters]);
+
   const sortedReturns = useMemo(() => {
     const sorted = [...filteredReturns];
     // Sort logic if needed, e.g., by date or any other field
@@ -160,7 +185,7 @@ const Returns = () => {
   };
 
   const columns = [
-    { key: 'Tags', label: 'Tags', className: 'tags' },
+    { key: 'tags', label: 'Tags', className: 'tags' },
     { key: 'Firstnames', label: 'Name', className: 'name' },
     { key: 'spFirstnames', label: 'Spouse', className: 'spouse' },
     { key: 'FileStatus', label: 'File Status', className: 'file-status' },
@@ -180,14 +205,11 @@ const Returns = () => {
     </div>
   );
 
+  const pageCount = Math.max(Math.ceil(filteredReturns.length / itemsPerPage), 1);
+  const forcePage = Math.min(currentPage, pageCount - 1);
+
   return (
     <div className="main-container">
-      <APIController 
-        url={`${baseURL}${userID}/${clientId}?${buildParams()}`} 
-        setData={setClientReturnsData} 
-        setLoading={() => {}} 
-        setError={() => {}} 
-      />
       {clientInfo ? (
         <>
           <div className="client-info">
@@ -287,24 +309,28 @@ const Returns = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedReturns.map((returnItem, index) => (
+                  {paginatedReturns.length > 0 ? paginatedReturns.map((returnItem, index) => (
                     <tr key={index}>
                       {columns.map((column) => (
                         <td key={column.key} className={column.className}>
                           <div className="scrollable-content">
-                            {returnItem[column.key]}
+                            {returnItem[column.key] || 'N/A'}
                           </div>
                         </td>
                       ))}
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={columns.length} className="no-results">No results found</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
               <ReactPaginate
                 previousLabel={'‹'}
                 nextLabel={'›'}
                 breakLabel={'...'}
-                pageCount={Math.ceil(filteredReturns.length / itemsPerPage)}
+                pageCount={pageCount}
                 marginPagesDisplayed={1}
                 pageRangeDisplayed={5}
                 onPageChange={({ selected }) => setCurrentPage(selected)}
@@ -319,7 +345,7 @@ const Returns = () => {
                 nextLinkClassName={'page-link'}
                 breakClassName={'page-item'}
                 breakLinkClassName={'page-link'}
-                forcePage={currentPage}
+                forcePage={forcePage}
               />
             </div>
           </div>
