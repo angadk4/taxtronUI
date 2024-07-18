@@ -189,7 +189,15 @@ const FilterTable = () => {
   };
 
   const handleClientClick = async (clientId) => {
-    navigate(`/returns/${clientId}`, { state: { clientInfo: filteredClients.find(client => client.clientId === clientId) } });
+    const selectedClient = filteredClients.find(client => client.clientId === clientId);
+    const clientInfo = {
+      clientId: selectedClient.clientId,
+      firstnames: selectedClient.firstnames,
+      surname: selectedClient.surname,
+      phoneNo: selectedClient.phoneNo,
+      email: selectedClient.email,
+    };
+    navigate(`/returns/${clientId}`, { state: { clientInfo } });
   };
 
   const exportToCSV = () => {

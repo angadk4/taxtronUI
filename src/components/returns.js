@@ -11,7 +11,7 @@ const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, ' ').trim();
 const Returns = () => {
   const { clientId } = useParams();
   const location = useLocation();
-  const [clientInfo, setClientInfo] = useState(null);
+  const [clientInfo, setClientInfo] = useState(location.state?.clientInfo || {});
   const [clientReturnsData, setClientReturnsData] = useState([]);
   const [filteredReturns, setFilteredReturns] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -46,10 +46,6 @@ const Returns = () => {
     // Add parameters as needed
     return params.toString();
   };
-
-  useEffect(() => {
-    setClientInfo(location.state?.clientInfo || null);
-  }, [clientId, location.state]);
 
   useEffect(() => {
     const fetchClientReturnsData = async () => {
@@ -213,10 +209,10 @@ const Returns = () => {
       {clientInfo ? (
         <>
           <div className="client-info">
-            <p><strong>Client Name</strong> <span>{clientInfo.Firstnames} {clientInfo.Surname}</span></p>
+            <p><strong>Client Name</strong> <span>{clientInfo.firstnames} {clientInfo.surname}</span></p>
             <p><strong>Client ID</strong> <span>{clientId}</span></p>
-            <p><strong>Phone Number</strong> <span>{clientInfo.PhoneNo}</span></p>
-            <p><strong>Email</strong> <span>{clientInfo.Email}</span></p>
+            <p><strong>Phone Number</strong> <span>{clientInfo.phoneNo}</span></p>
+            <p><strong>Email</strong> <span>{clientInfo.email}</span></p>
           </div>
 
           <div className="status-container">
