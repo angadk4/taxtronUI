@@ -31,12 +31,12 @@
   font-style: italic;
   color: #4b4b4b;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  margin-right: 50px; 
+  margin-right: 150px; /* Increase the margin to create more space between the title and the menu */
 }
 
 .header-menu {
   position: absolute;
-  left: 50%;
+  left: 60%; /* Adjust the left offset to move the menu closer to the middle */
   transform: translateX(-50%);
   display: flex;
   gap: 15px;

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react
 import './App.css';
 import FilterTable from './components/filtertable';
 import Returns from './components/returns';
+import AllReturns from './components/AllReturns';  // Import the new component
 import APIController from './components/clientfetch';
 import Header from './components/header';
 
@@ -32,6 +33,7 @@ function App() {
           <Routes>
             <Route path="/" element={<FilterTable />} />
             <Route path="/returns/:clientId" element={<Returns />} />
+            <Route path="/allreturns" element={<AllReturns />} />  // Add the new route
           </Routes>
         </div>
       </div>
