@@ -87,7 +87,6 @@ const FilterTable = () => {
   });
   const [currentPage, setCurrentPage] = useState(0);
   const [filteredClients, setFilteredClients] = useState([]);
-  const [originalClients, setOriginalClients] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedYear, setSelectedYear] = useState('Cur Yr');
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -172,7 +171,7 @@ const FilterTable = () => {
   const paginatedClients = useMemo(() => {
     const startIndex = currentPage * itemsPerPage;
     return sortedClients.slice(startIndex, startIndex + itemsPerPage);
-  }, [sortedClients, currentPage]);
+  }, [sortedClients, currentPage, itemsPerPage]);
 
   const requestSort = (key) => {
     setSortConfig((prevState) => ({
@@ -320,7 +319,7 @@ const FilterTable = () => {
     setAppliedCurFilters({});
     setAppliedPrevFilters({});
     setCurrentPage(0);
-    setFilteredClients(originalClients); // Reset to original clients
+    setFilteredClients([]); // Reset to empty array
     setSelectedYear('Cur Yr');
   };
 
@@ -540,7 +539,7 @@ const FilterTable = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedClients.length > 0 ? paginatedClients.map((client, index) => (
+                {filteredClients.length > 0 ? filteredClients.map((client, index) => (
                   <tr
                     key={index}
                     onClick={() => handleClientClick(client.clientId)}
@@ -565,7 +564,7 @@ const FilterTable = () => {
               previousLabel={'‹'}
               nextLabel={'›'}
               breakLabel={'...'}
-              pageCount={Math.max(Math.ceil(sortedClients.length / itemsPerPage), 1)}
+              pageCount={Math.ceil(pagination / itemsPerPage)}
               marginPagesDisplayed={1}
               pageRangeDisplayed={5}
               onPageChange={({ selected }) => setCurrentPage(selected)}
@@ -580,7 +579,7 @@ const FilterTable = () => {
               nextLinkClassName={'page-link'}
               breakClassName={'page-item'}
               breakLinkClassName={'page-link'}
-              forcePage={Math.min(currentPage, Math.max(Math.ceil(sortedClients.length / itemsPerPage) - 1, 0))}
+              forcePage={currentPage}
             />
           </div>
         )}
