@@ -56,6 +56,7 @@ const AllReturns = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pagination, setPagination] = useState(0);
   const itemsPerPage = 20;
 
   const months = useMemo(() =>
@@ -76,19 +77,19 @@ const AllReturns = () => {
       const curPrefix = 'b';
       if (appliedCurFilters.selfEmployed) filters.push(`${curPrefix}SelfEmployed eq true`);
       if (appliedCurFilters.foreignTaxFilingRequired) filters.push(`${curPrefix}ForeignTaxFilingRequired eq true`);
-      if (appliedCurFilters.discountedReturn) filters.push(`${curPrefix}DicountedRet eq true`);
+      if (appliedCurFilters.discountedReturn) filters.push(`${curPrefix}DiscountedReturn eq true`);
       if (appliedCurFilters.gstDue) filters.push(`${curPrefix}GSTDue eq true`);
       if (appliedCurFilters.expectedRefund) filters.push(`${curPrefix}ExpectedRefund eq true`);
-      if (appliedCurFilters.payrollSlipsDue) filters.push(`${curPrefix}PayRollSlipsDue eq true`);
+      if (appliedCurFilters.payrollSlipsDue) filters.push(`${curPrefix}PayrollSlipsDue eq true`);
     }
     if (Object.values(appliedPrevFilters).some(v => v)) {
       const prevPrefix = 'Pre_b';
       if (appliedPrevFilters.selfEmployed) filters.push(`${prevPrefix}SelfEmployed eq true`);
       if (appliedPrevFilters.foreignTaxFilingRequired) filters.push(`${prevPrefix}ForeignTaxFilingRequired eq true`);
-      if (appliedPrevFilters.discountedReturn) filters.push(`${prevPrefix}DicountedRet eq true`);
+      if (appliedPrevFilters.discountedReturn) filters.push(`${prevPrefix}DiscountedReturn eq true`);
       if (appliedPrevFilters.gstDue) filters.push(`${prevPrefix}GSTDue eq true`);
       if (appliedPrevFilters.expectedRefund) filters.push(`${prevPrefix}ExpectedRefund eq true`);
-      if (appliedPrevFilters.payrollSlipsDue) filters.push(`${prevPrefix}PayRollSlipsDue eq true`);
+      if (appliedPrevFilters.payrollSlipsDue) filters.push(`${prevPrefix}PayrollSlipsDue eq true`);
     }
     if (filters.length > 0) {
       params.append('FilterText', filters.join(' and '));
@@ -116,7 +117,7 @@ const AllReturns = () => {
   useEffect(() => {
     setLoading(true);
     setFilteredClients([]);
-  }, [activeTab]);
+  }, [activeTab, debouncedSearchQuery, selectedLocation, appliedCurFilters, appliedPrevFilters]);
 
   const sortedClients = useMemo(() => {
     const sorted = Array.isArray(filteredClients) ? [...filteredClients] : [];
@@ -411,7 +412,7 @@ const AllReturns = () => {
           </div>
         )}
         {error && <div className="error-popup">{error}</div>}
-        <APIController url={`${baseURL}${userID}/all?${buildParams()}`} setData={setFilteredClients} setLoading={setLoading} setError={setError} />
+        <APIController url={`${baseURL}${userID}/all?${buildParams()}`} setData={setFilteredClients} setLoading={setLoading} setError={setError} setPagination={setPagination} />
         {loading ? (
           <div className="loading-spinner">Loading...</div>
         ) : (

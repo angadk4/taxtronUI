@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
 
-const APIController = ({ url, params, setData, setLoading, setError }) => {
+const APIController = ({ url, params, setData, setLoading, setError, setPagination }) => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -13,7 +13,8 @@ const APIController = ({ url, params, setData, setLoading, setError }) => {
           params: params,
         });
         console.log('Fetched Data:', response.data);
-        setData(response.data);
+        setPagination(response.data.item1); // Store item1 in pagination
+        setData(response.data.item2); // Store item2 data
         setError(null);
       } catch (error) {
         setError(error.message);
@@ -26,7 +27,7 @@ const APIController = ({ url, params, setData, setLoading, setError }) => {
     if (url) {
       fetchData();
     }
-  }, [url, params, setData, setLoading, setError]);
+  }, [url, params, setData, setLoading, setError, setPagination]);
 
   return null;
 };

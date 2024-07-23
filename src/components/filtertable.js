@@ -93,6 +93,7 @@ const FilterTable = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pagination, setPagination] = useState(0); // For storing the item1 value
   const itemsPerPage = 20;
 
   const months = useMemo(() =>
@@ -101,18 +102,14 @@ const FilterTable = () => {
 
   const buildParams = useCallback(() => {
     const params = new URLSearchParams();
-    
     params.append('Prod', activeTab);
     if (debouncedSearchQuery) {
       params.append('SearchText', debouncedSearchQuery);
     }
-
     if (selectedLocation) {
       params.append('Location', selectedLocation);
     }
-
     const filters = [];
-
     if (Object.values(appliedCurFilters).some(v => v)) {
       const curPrefix = 'b';
       if (appliedCurFilters.selfEmployed) filters.push(`${curPrefix}SelfEmployed eq true`);
@@ -122,7 +119,6 @@ const FilterTable = () => {
       if (appliedCurFilters.expectedRefund) filters.push(`${curPrefix}ExpectedRefund eq true`);
       if (appliedCurFilters.payrollSlipsDue) filters.push(`${curPrefix}PayRollSlipsDue eq true`);
     }
-
     if (Object.values(appliedPrevFilters).some(v => v)) {
       const prevPrefix = 'Pre_b';
       if (appliedPrevFilters.selfEmployed) filters.push(`${prevPrefix}SelfEmployed eq true`);
@@ -132,16 +128,13 @@ const FilterTable = () => {
       if (appliedPrevFilters.expectedRefund) filters.push(`${prevPrefix}ExpectedRefund eq true`);
       if (appliedPrevFilters.payrollSlipsDue) filters.push(`${prevPrefix}PayRollSlipsDue eq true`);
     }
-
     if (filters.length > 0) {
       params.append('FilterText', filters.join(' and '));
     }
-
     params.append('Size', itemsPerPage);
     if (currentPage > 0) {
       params.append('Skip', currentPage * itemsPerPage);
     }
-
     return params.toString();
   }, [activeTab, debouncedSearchQuery, selectedLocation, appliedCurFilters, appliedPrevFilters, currentPage]);
 
@@ -527,7 +520,7 @@ const FilterTable = () => {
           </div>
         )}
         {error && <div className="error-popup">{error}</div>}
-        <APIController url={`${baseURL}${userID}?${buildParams()}`} setData={setFilteredClients} setLoading={setLoading} setError={setError} />
+        <APIController url={`${baseURL}${userID}?${buildParams()}`} setData={setFilteredClients} setLoading={setLoading} setError={setError} setPagination={setPagination} />
         {loading ? (
           <div className="loading-spinner">Loading...</div>
         ) : (

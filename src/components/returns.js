@@ -55,13 +55,8 @@ const Returns = () => {
         console.log('Fetching URL:', url);
         const response = await axios.get(url);
         console.log('Fetched Data:', response.data);
-        if (response.data.Result === 0 && response.data.Status === "Success") {
-          setClientReturnsData([]);
-          setFilteredReturns([]);
-        } else {
-          setClientReturnsData(response.data);
-          setFilteredReturns(response.data);
-        }
+        setClientReturnsData(response.data.item2); // Set the item2 data
+        setFilteredReturns(response.data.item2); // Filter the item2 data
         setError('');
       } catch (error) {
         console.error('Error fetching client returns data:', error);
