@@ -56,7 +56,7 @@ const AllReturns = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [pagination, setPagination] = useState(0);
+  const [pagination, setPagination] = useState(0); // For storing the item1 value
   const itemsPerPage = 20;
 
   const months = useMemo(() =>
@@ -117,7 +117,7 @@ const AllReturns = () => {
   useEffect(() => {
     setLoading(true);
     setFilteredClients([]);
-  }, [activeTab, debouncedSearchQuery, selectedLocation, appliedCurFilters, appliedPrevFilters]);
+  }, [activeTab]);
 
   const sortedClients = useMemo(() => {
     const sorted = Array.isArray(filteredClients) ? [...filteredClients] : [];
@@ -127,7 +127,7 @@ const AllReturns = () => {
   const paginatedClients = useMemo(() => {
     const startIndex = currentPage * itemsPerPage;
     return sortedClients.slice(startIndex, startIndex + itemsPerPage);
-  }, [sortedClients, currentPage]);
+  }, [sortedClients, currentPage, itemsPerPage]);
 
   const handleCheckboxChange = (event) => {
     const { name } = event.target;
@@ -447,7 +447,7 @@ const AllReturns = () => {
               previousLabel={'‹'}
               nextLabel={'›'}
               breakLabel={'...'}
-              pageCount={Math.ceil(filteredClients.length / itemsPerPage)}
+              pageCount={Math.ceil(pagination / itemsPerPage)}
               marginPagesDisplayed={1}
               pageRangeDisplayed={5}
               onPageChange={({ selected }) => setCurrentPage(selected)}

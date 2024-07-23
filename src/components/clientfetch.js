@@ -14,7 +14,7 @@ const APIController = ({ url, params, setData, setLoading, setError, setPaginati
         });
         console.log('Fetched Data:', response.data);
         setPagination(response.data.item1); // Store item1 in pagination
-        setData(response.data.item2); // Store item2 data
+        setData(Array.isArray(response.data.item2) ? response.data.item2 : []); // Ensure item2 is an array
         setError(null);
       } catch (error) {
         setError(error.message);
