@@ -3,9 +3,10 @@ import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react
 import './App.css';
 import FilterTable from './components/filtertable';
 import Returns from './components/returns';
-import AllReturns from './components/AllReturns';  // Import the new component
+import AllReturns from './components/AllReturns';
 import APIController from './components/clientfetch';
 import Header from './components/header';
+import Login from './components/login'; // Import the new Login component
 
 function NavigationButton() {
   const location = useLocation();
@@ -33,7 +34,8 @@ function App() {
           <Routes>
             <Route path="/" element={<FilterTable />} />
             <Route path="/returns/:clientId" element={<Returns />} />
-            <Route path="/allreturns" element={<AllReturns />} />  // Add the new route
+            <Route path="/allreturns" element={<AllReturns />} />
+            <Route path="/login" element={<Login />} /> {/* Add this line */}
           </Routes>
         </div>
       </div>

@@ -1,8 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './header.css';
 
 function Header() {
+  const navigate = useNavigate();
+
+  const handleLoginClick = () => {
+    navigate('/login');
+  };
+
   return (
     <header className="header">
       <div className="header-left">
@@ -16,7 +22,7 @@ function Header() {
         <div className="menu-divider"></div> 
         <Link to="/allreturns" className="menu-link">All Returns</Link>
       </nav>
-      <button className="login-button">Login</button>
+      <button className="login-button" onClick={handleLoginClick}>Login</button>
     </header>
   );
 }

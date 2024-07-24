@@ -65,7 +65,7 @@ const AllReturns = () => {
 
   const buildParams = useCallback(() => {
     const params = new URLSearchParams();
-    params.append('Prod', activeTab);
+    params.append('Product', activeTab);
     if (debouncedSearchQuery) {
       params.append('SearchText', debouncedSearchQuery);
     }
@@ -77,7 +77,7 @@ const AllReturns = () => {
       const curPrefix = 'b';
       if (appliedCurFilters.selfEmployed) filters.push(`${curPrefix}SelfEmployed eq true`);
       if (appliedCurFilters.foreignTaxFilingRequired) filters.push(`${curPrefix}ForeignTaxFilingRequired eq true`);
-      if (appliedCurFilters.discountedReturn) filters.push(`${curPrefix}DiscountedReturn eq true`);
+      if (appliedCurFilters.discountedReturn) filters.push(`${curPrefix}DiscountedRet eq true`);
       if (appliedCurFilters.gstDue) filters.push(`${curPrefix}GSTDue eq true`);
       if (appliedCurFilters.expectedRefund) filters.push(`${curPrefix}ExpectedRefund eq true`);
       if (appliedCurFilters.payrollSlipsDue) filters.push(`${curPrefix}PayrollSlipsDue eq true`);
@@ -86,7 +86,7 @@ const AllReturns = () => {
       const prevPrefix = 'Pre_b';
       if (appliedPrevFilters.selfEmployed) filters.push(`${prevPrefix}SelfEmployed eq true`);
       if (appliedPrevFilters.foreignTaxFilingRequired) filters.push(`${prevPrefix}ForeignTaxFilingRequired eq true`);
-      if (appliedPrevFilters.discountedReturn) filters.push(`${prevPrefix}DiscountedReturn eq true`);
+      if (appliedPrevFilters.discountedReturn) filters.push(`${prevPrefix}DiscountedRet eq true`);
       if (appliedPrevFilters.gstDue) filters.push(`${prevPrefix}GSTDue eq true`);
       if (appliedPrevFilters.expectedRefund) filters.push(`${prevPrefix}ExpectedRefund eq true`);
       if (appliedPrevFilters.payrollSlipsDue) filters.push(`${prevPrefix}PayrollSlipsDue eq true`);
@@ -95,9 +95,7 @@ const AllReturns = () => {
       params.append('FilterText', filters.join(' and '));
     }
     params.append('Size', itemsPerPage);
-    if (currentPage > 0) {
-      params.append('Skip', currentPage * itemsPerPage);
-    }
+    params.append('Skip', currentPage * itemsPerPage);
     return params.toString();
   }, [activeTab, debouncedSearchQuery, selectedLocation, appliedCurFilters, appliedPrevFilters, currentPage]);
 
@@ -120,14 +118,12 @@ const AllReturns = () => {
   }, [activeTab]);
 
   const sortedClients = useMemo(() => {
-    const sorted = Array.isArray(filteredClients) ? [...filteredClients] : [];
-    return sorted;
+    return Array.isArray(filteredClients) ? [...filteredClients] : [];
   }, [filteredClients]);
 
   const paginatedClients = useMemo(() => {
-    const startIndex = currentPage * itemsPerPage;
-    return sortedClients.slice(startIndex, startIndex + itemsPerPage);
-  }, [sortedClients, currentPage, itemsPerPage]);
+    return sortedClients;
+  }, [sortedClients]);
 
   const handleCheckboxChange = (event) => {
     const { name } = event.target;
