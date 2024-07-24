@@ -188,8 +188,12 @@ const FilterTable = () => {
       surname: selectedClient.surname,
       phoneNo: selectedClient.phoneNo,
       email: selectedClient.email,
+      companyName: selectedClient.companyName,
+      bnFull: selectedClient.bnFull,
+      estateName: selectedClient.estateName,
+      SNFull: selectedClient.SNFull
     };
-    navigate(`/returns/${clientId}`, { state: { clientInfo } });
+    navigate(`/returns/${clientId}`, { state: { clientInfo, activeTab } });
   };
 
   const exportToCSV = () => {

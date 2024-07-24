@@ -40,6 +40,7 @@ const Returns = () => {
   const itemsPerPage = 15;
   const userID = '000779638e3141fcb06a56bdc5cc484e';
   const baseURL = '/taxreturnsearch/getreturnsdata/';
+  const activeTab = location.state?.activeTab || 'T1'; // Get the activeTab from the state or default to T1
 
   const buildParams = () => {
     const params = new URLSearchParams();
@@ -205,10 +206,28 @@ const Returns = () => {
       {clientInfo ? (
         <>
           <div className="client-info">
-            <p><strong>Client Name</strong> <span>{clientInfo.firstnames} {clientInfo.surname}</span></p>
-            <p><strong>Client ID</strong> <span>{clientId}</span></p>
-            <p><strong>Phone Number</strong> <span>{clientInfo.phoneNo}</span></p>
-            <p><strong>Email</strong> <span>{clientInfo.email}</span></p>
+            {activeTab === 'T1' && (
+              <>
+                <p><strong>Client Name:</strong> <span>{clientInfo.firstnames} {clientInfo.surname}</span></p>
+                <p><strong>Client ID:</strong> <span>{clientId}</span></p>
+                <p><strong>Phone Number:</strong> <span>{clientInfo.phoneNo}</span></p>
+                <p><strong>Email:</strong> <span>{clientInfo.email}</span></p>
+              </>
+            )}
+            {activeTab === 'T2' && (
+              <>
+                <p><strong>Client ID:</strong> <span>{clientId}</span></p>
+                <p><strong>Company Name:</strong> <span>{clientInfo.companyName}</span></p>
+                <p><strong>Company Number:</strong> <span>{clientInfo.bnFull}</span></p>
+              </>
+            )}
+            {activeTab === 'T3' && (
+              <>
+                <p><strong>Client ID:</strong> <span>{clientId}</span></p>
+                <p><strong>Estate Name:</strong> <span>{clientInfo.estateName}</span></p>
+                <p><strong>Trust Number:</strong> <span>{clientInfo.SNFull}</span></p>
+              </>
+            )}
           </div>
 
           <div className="status-container">
